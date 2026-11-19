@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "368483467819",
+    "project_id": "ltm-finance",
+    "storage_bucket": "ltm-finance.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:368483467819:android:bbe1143f91dbfadbd0206e",
+        "android_client_info": {
+          "package_name": "com.ltm.finance"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAs6BigjexkezhjJAly7v5-HPFOoIEgqfc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
