@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ltm.finance.data.storage.CloudSyncStatus
 import com.ltm.finance.domain.FinanceEngine
 import com.ltm.finance.ui.MainViewModel
 import com.ltm.finance.ui.components.*
@@ -80,6 +81,46 @@ fun OverviewScreen(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
+
+                    val cloudState by viewModel.cloudSyncState.collectAsState()
+                    Spacer(modifier = Modifier.height(3.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { onNavigateToSettings() }
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    when (cloudState.status) {
+                                        CloudSyncStatus.SYNCED -> LiquidEmerald
+                                        CloudSyncStatus.SYNCING -> LiquidCyan
+                                        CloudSyncStatus.ERROR -> LiquidRose
+                                        CloudSyncStatus.OFFLINE -> TextSecondary
+                                    }
+                                )
+                        )
+                        Text(
+                            text = when (cloudState.status) {
+                                CloudSyncStatus.SYNCED -> "Đám mây: Đã đồng bộ"
+                                CloudSyncStatus.SYNCING -> "Đang lưu lên đám mây..."
+                                CloudSyncStatus.ERROR -> "Lỗi đám mây (Chạm để xem)"
+                                CloudSyncStatus.OFFLINE -> "Chưa bật đám mây (Chạm để đăng nhập)"
+                            },
+                            fontSize = 10.sp,
+                            color = when (cloudState.status) {
+                                CloudSyncStatus.SYNCED -> LiquidEmerald
+                                CloudSyncStatus.SYNCING -> LiquidCyan
+                                CloudSyncStatus.ERROR -> LiquidRose
+                                CloudSyncStatus.OFFLINE -> TextSecondary
+                            },
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
 
                 Row(

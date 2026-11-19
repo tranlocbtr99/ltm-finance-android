@@ -1,8 +1,10 @@
 package com.ltm.finance.ui
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.ltm.finance.data.model.*
+import com.ltm.finance.data.storage.CloudSyncState
 import com.ltm.finance.data.storage.FinanceRepository
 import com.ltm.finance.domain.*
 import kotlinx.coroutines.flow.*
@@ -28,8 +30,10 @@ data class OverviewUiState(
 )
 
 class MainViewModel(
-    val repository: FinanceRepository = FinanceRepository()
-) : ViewModel() {
+    application: Application
+) : AndroidViewModel(application) {
+
+    val repository: FinanceRepository = FinanceRepository(application.applicationContext)
 
     val userProfile = repository.userProfile
     val accounts = repository.accounts
@@ -40,6 +44,9 @@ class MainViewModel(
     val chatMessages = repository.chatMessages
     val researchEvents = repository.researchEvents
     val securityPin = repository.securityPin
+    val cloudSyncState = repository.cloudSyncState
+
+    fun triggerCloudSync() = repository.pushToCloud()
 
     // Security Lock state
     private val _isUnlocked = MutableStateFlow(true)

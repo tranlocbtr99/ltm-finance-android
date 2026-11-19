@@ -1,6 +1,9 @@
 package com.ltm.finance.data.storage
 
 import android.content.Context
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.SetOptions
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.ltm.finance.data.model.*
@@ -15,6 +18,19 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.UUID
+
+enum class CloudSyncStatus {
+    OFFLINE,
+    SYNCING,
+    SYNCED,
+    ERROR
+}
+
+data class CloudSyncState(
+    val status: CloudSyncStatus = CloudSyncStatus.OFFLINE,
+    val message: String = "Chưa kết nối đám mây",
+    val lastSyncedTime: Long = 0L
+)
 
 data class BackupDataWrapper(
     val userProfile: UserProfile,
@@ -74,6 +90,23 @@ class FinanceRepository(private val context: Context? = null) {
 
     private val gson = Gson()
 
+    private val firestore by lazy {
+        try {
+            FirebaseFirestore.getInstance()
+        } catch (e: Exception) {
+            null
+        }
+    }
+    private var cloudListener: ListenerRegistration? = null
+    private var isCloudUpdating = false
+
+    private val _cloudSyncState = MutableStateFlow(CloudSyncState())
+    val cloudSyncState: StateFlow<CloudSyncState> = _cloudSyncState.asStateFlow()
+
+    private val prefs by lazy {
+        context?.getSharedPreferences("ltm_finance_prefs", Context.MODE_PRIVATE)
+    }
+
     init {
         // Welcome message
         _chatMessages.value = listOf(
@@ -88,6 +121,25 @@ class FinanceRepository(private val context: Context? = null) {
             )
         )
         logResearchEvent("APP_INITIALIZED", mapOf("mode" to "CLEAN_START"))
+
+        val savedEmail = prefs?.getString("google_email", null)
+        val isLinked = prefs?.getBoolean("is_google_linked", false) ?: false
+        if (isLinked && !savedEmail.isNullOrBlank()) {
+            val savedName = prefs?.getString("display_name", "Sinh viên") ?: "Sinh viên"
+            val savedPhoto = prefs?.getString("photo_url", null)
+            _userProfile.value = _userProfile.value.copy(
+                isGoogleLinked = true,
+                googleEmail = savedEmail,
+                displayName = savedName,
+                photoUrl = savedPhoto
+            )
+            setupCloudSync(savedEmail)
+        }
+    }
+
+    private fun onDataChanged() {
+        refreshProactiveAlerts()
+        pushToCloud()
     }
 
     fun refreshProactiveAlerts() {
@@ -135,7 +187,7 @@ class FinanceRepository(private val context: Context? = null) {
         )
         _accounts.value = _accounts.value + newAccount
         logResearchEvent("ACCOUNT_CREATED", mapOf("name" to name, "type" to type.name, "balance" to balance.toString()))
-        refreshProactiveAlerts()
+        onDataChanged()
     }
 
     fun editAccount(
@@ -161,13 +213,13 @@ class FinanceRepository(private val context: Context? = null) {
             } else it
         }
         logResearchEvent("ACCOUNT_EDITED", mapOf("id" to id, "newBalance" to balance.toString()))
-        refreshProactiveAlerts()
+        onDataChanged()
     }
 
     fun deleteAccount(id: String) {
         _accounts.value = _accounts.value.filter { it.id != id }
         logResearchEvent("ACCOUNT_DELETED", mapOf("id" to id))
-        refreshProactiveAlerts()
+        onDataChanged()
     }
 
     // ==========================================
@@ -209,13 +261,13 @@ class FinanceRepository(private val context: Context? = null) {
         )
         _debts.value = _debts.value + newDebt
         logResearchEvent("DEBT_CREATED", mapOf("name" to name, "balance" to currentBalance.toString()))
-        refreshProactiveAlerts()
+        onDataChanged()
     }
 
     fun deleteDebt(id: String) {
         _debts.value = _debts.value.filter { it.id != id }
         logResearchEvent("DEBT_DELETED", mapOf("id" to id))
-        refreshProactiveAlerts()
+        onDataChanged()
     }
 
     // ==========================================
@@ -239,7 +291,7 @@ class FinanceRepository(private val context: Context? = null) {
         val updatedBudgets = _budgets.value + newBudget
         _budgets.value = FinanceEngine.updateBudgetSpending(updatedBudgets, _transactions.value, currentMonth)
         logResearchEvent("BUDGET_CREATED", mapOf("category" to category, "amount" to amount.toString()))
-        refreshProactiveAlerts()
+        onDataChanged()
     }
 
     fun adjustBudget(budgetId: String, newAmount: BigDecimal, reason: String, modifiedBy: String = "User") {
@@ -262,13 +314,13 @@ class FinanceRepository(private val context: Context? = null) {
         }
         _budgets.value = updated
         logResearchEvent("BUDGET_ADJUSTED", mapOf("budgetId" to budgetId, "newAmount" to newAmount.toString(), "reason" to reason))
-        refreshProactiveAlerts()
+        onDataChanged()
     }
 
     fun deleteBudget(budgetId: String) {
         _budgets.value = _budgets.value.filter { it.id != budgetId }
         logResearchEvent("BUDGET_DELETED", mapOf("budgetId" to budgetId))
-        refreshProactiveAlerts()
+        onDataChanged()
     }
 
     // ==========================================
@@ -329,7 +381,7 @@ class FinanceRepository(private val context: Context? = null) {
         _budgets.value = FinanceEngine.updateBudgetSpending(_budgets.value, updatedTxList, currentMonth)
 
         logResearchEvent("TRANSACTION_LOGGED", mapOf("type" to type.name, "amount" to amount.toString(), "category" to category))
-        refreshProactiveAlerts()
+        onDataChanged()
     }
 
     fun deleteTransaction(txId: String) {
@@ -360,7 +412,7 @@ class FinanceRepository(private val context: Context? = null) {
         val currentMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"))
         _budgets.value = FinanceEngine.updateBudgetSpending(_budgets.value, _transactions.value, currentMonth)
         logResearchEvent("TRANSACTION_DELETED", mapOf("id" to txId))
-        refreshProactiveAlerts()
+        onDataChanged()
     }
 
     // ==========================================
@@ -414,17 +466,143 @@ class FinanceRepository(private val context: Context? = null) {
             displayName = if (_userProfile.value.displayName == "Sinh viên" || _userProfile.value.displayName.isBlank()) displayName else _userProfile.value.displayName,
             photoUrl = photoUrl
         )
+        prefs?.edit()?.apply {
+            putString("google_email", email)
+            putString("display_name", displayName)
+            putString("photo_url", photoUrl)
+            putBoolean("is_google_linked", true)
+            apply()
+        }
         logResearchEvent("AUTH_GOOGLE_LINKED", mapOf("email" to email))
+        setupCloudSync(email)
     }
 
     fun unlinkGoogleAccount() {
         val currentEmail = _userProfile.value.googleEmail ?: ""
+        cloudListener?.remove()
+        cloudListener = null
+        prefs?.edit()?.apply {
+            remove("google_email")
+            remove("display_name")
+            remove("photo_url")
+            putBoolean("is_google_linked", false)
+            apply()
+        }
         _userProfile.value = _userProfile.value.copy(
             isGoogleLinked = false,
             googleEmail = null,
             photoUrl = null
         )
+        _cloudSyncState.value = CloudSyncState(
+            status = CloudSyncStatus.OFFLINE,
+            message = "Chưa kết nối đám mây"
+        )
         logResearchEvent("AUTH_GOOGLE_UNLINKED", mapOf("email" to currentEmail))
+    }
+
+    fun setupCloudSync(email: String) {
+        val db = firestore ?: return
+        val docId = email.replace(".", "_")
+        cloudListener?.remove()
+
+        _cloudSyncState.value = CloudSyncState(
+            status = CloudSyncStatus.SYNCING,
+            message = "Đang kết nối đám mây..."
+        )
+
+        cloudListener = db.collection("ltm_users").document(docId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    _cloudSyncState.value = CloudSyncState(
+                        status = CloudSyncStatus.ERROR,
+                        message = "Lỗi đám mây: ${error.localizedMessage ?: "Mất kết nối"}"
+                    )
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null && snapshot.exists()) {
+                    try {
+                        isCloudUpdating = true
+                        val accsJson = snapshot.getString("accountsJson")
+                        if (!accsJson.isNullOrBlank()) {
+                            val type = object : TypeToken<List<FinancialAccount>>() {}.type
+                            _accounts.value = gson.fromJson(accsJson, type)
+                        }
+                        val txsJson = snapshot.getString("transactionsJson")
+                        if (!txsJson.isNullOrBlank()) {
+                            val type = object : TypeToken<List<Transaction>>() {}.type
+                            _transactions.value = gson.fromJson(txsJson, type)
+                        }
+                        val debtsJson = snapshot.getString("debtsJson")
+                        if (!debtsJson.isNullOrBlank()) {
+                            val type = object : TypeToken<List<Debt>>() {}.type
+                            _debts.value = gson.fromJson(debtsJson, type)
+                        }
+                        val budgetsJson = snapshot.getString("budgetsJson")
+                        if (!budgetsJson.isNullOrBlank()) {
+                            val type = object : TypeToken<List<Budget>>() {}.type
+                            _budgets.value = gson.fromJson(budgetsJson, type)
+                        }
+                        val pin = snapshot.getString("securityPin")
+                        if (!pin.isNullOrBlank()) {
+                            _securityPin.value = pin
+                        }
+                        _cloudSyncState.value = CloudSyncState(
+                            status = CloudSyncStatus.SYNCED,
+                            message = "Đã đồng bộ từ đám mây",
+                            lastSyncedTime = System.currentTimeMillis()
+                        )
+                        refreshProactiveAlerts()
+                    } catch (e: Exception) {
+                        _cloudSyncState.value = CloudSyncState(
+                            status = CloudSyncStatus.ERROR,
+                            message = "Lỗi đọc dữ liệu đám mây: ${e.message}"
+                        )
+                    } finally {
+                        isCloudUpdating = false
+                    }
+                } else {
+                    // Document doesn't exist yet on cloud, push initial local data
+                    pushToCloud()
+                }
+            }
+    }
+
+    fun pushToCloud() {
+        val email = _userProfile.value.googleEmail
+        if (email.isNullOrBlank() || isCloudUpdating) return
+        val db = firestore ?: return
+
+        _cloudSyncState.value = _cloudSyncState.value.copy(
+            status = CloudSyncStatus.SYNCING,
+            message = "Đang lưu lên đám mây..."
+        )
+        val docId = email.replace(".", "_")
+        val data = mapOf(
+            "email" to email,
+            "displayName" to _userProfile.value.displayName,
+            "accountsJson" to gson.toJson(_accounts.value),
+            "transactionsJson" to gson.toJson(_transactions.value),
+            "debtsJson" to gson.toJson(_debts.value),
+            "budgetsJson" to gson.toJson(_budgets.value),
+            "securityPin" to (_securityPin.value ?: ""),
+            "lastUpdatedAt" to System.currentTimeMillis()
+        )
+        db.collection("ltm_users").document(docId).set(data, SetOptions.merge())
+            .addOnSuccessListener {
+                _cloudSyncState.value = CloudSyncState(
+                    status = CloudSyncStatus.SYNCED,
+                    message = "Đã đồng bộ đám mây",
+                    lastSyncedTime = System.currentTimeMillis()
+                )
+            }
+            .addOnFailureListener { e ->
+                _cloudSyncState.value = CloudSyncState(
+                    status = CloudSyncStatus.ERROR,
+                    message = "Lỗi đồng bộ: ${e.localizedMessage ?: "Mất kết nối"}",
+                    lastSyncedTime = System.currentTimeMillis()
+                )
+            }
     }
 
     fun updateUserProfile(
@@ -444,10 +622,12 @@ class FinanceRepository(private val context: Context? = null) {
             financialGoal = financialGoal
         )
         logResearchEvent("PROFILE_UPDATED", mapOf("name" to displayName))
+        onDataChanged()
     }
 
     fun setSecurityPin(pin: String?) {
         _securityPin.value = pin
+        onDataChanged()
     }
 
     fun resetAllData() {
@@ -464,6 +644,7 @@ class FinanceRepository(private val context: Context? = null) {
             )
         )
         logResearchEvent("ALL_DATA_RESET", emptyMap())
+        onDataChanged()
     }
 
     fun exportBackupJson(): String {
@@ -487,7 +668,7 @@ class FinanceRepository(private val context: Context? = null) {
             _debts.value = wrapper.debts
             _budgets.value = wrapper.budgets
             _securityPin.value = wrapper.pinCode
-            refreshProactiveAlerts()
+            onDataChanged()
             logResearchEvent("BACKUP_RESTORED", emptyMap())
             true
         } catch (e: Exception) {

@@ -172,6 +172,36 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(14.dp))
 
                     if (userProfile.isGoogleLinked) {
+                        val cloudState by viewModel.cloudSyncState.collectAsState()
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(GlassBase)
+                                .border(1.dp, GlassBorderStroke, RoundedCornerShape(10.dp))
+                                .padding(10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Icon(Icons.Default.CloudSync, contentDescription = null, tint = LiquidEmerald, modifier = Modifier.size(18.dp))
+                                Column {
+                                    Text("Đám mây Firebase Realtime", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                                    Text(cloudState.message, fontSize = 10.sp, color = TextSecondary)
+                                }
+                            }
+                            IconButton(
+                                onClick = {
+                                    viewModel.triggerCloudSync()
+                                    alertMsg = "Đang đồng bộ dữ liệu lên Firebase..."
+                                },
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Icon(Icons.Default.Sync, contentDescription = "Đồng bộ ngay", tint = LiquidCyan, modifier = Modifier.size(18.dp))
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
                         Button(
                             onClick = {
                                 googleSignInClient.signOut().addOnCompleteListener {
