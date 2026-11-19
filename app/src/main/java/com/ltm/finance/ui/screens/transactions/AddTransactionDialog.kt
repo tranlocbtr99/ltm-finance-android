@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -34,13 +36,14 @@ fun AddTransactionDialog(
     onSave: (type: TransactionType, amount: BigDecimal, date: String, accountId: String, targetAccountId: String?, category: String, note: String) -> Unit
 ) {
     var selectedTypeIndex by remember { mutableIntStateOf(0) }
-    val types = listOf("Chi tiêu", "Thu nhập", "Chuyển tiền")
+    val types = listOf("Chi tiêu", "Thu nhập", "Chuyển khoản")
 
     var amountText by remember { mutableStateOf("") }
     var noteText by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf(Transaction.DEFAULT_EXPENSE_CATEGORIES.first()) }
     var selectedAccountId by remember { mutableStateOf(accounts.firstOrNull()?.id ?: "") }
     var selectedTargetAccountId by remember { mutableStateOf(accounts.getOrNull(1)?.id ?: "") }
+    var validationError by remember { mutableStateOf<String?>(null) }
 
     val dateStr = remember { LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) }
 
@@ -48,19 +51,19 @@ fun AddTransactionDialog(
         LiquidGlassCard(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp),
-            shape = RoundedCornerShape(26.dp),
-            backgroundColor = Color(0xFF0F172A).copy(alpha = 0.95f)
+                .padding(vertical = 12.dp),
+            shape = RoundedCornerShape(24.dp),
+            backgroundColor = Color(0xFF0F172A).copy(alpha = 0.96f)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(18.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Text(
-                    text = "Ghi chép giao dịch mới",
-                    fontSize = 18.sp,
+                    text = "Ghi chép giao dịch",
+                    fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary
                 )
@@ -71,10 +74,11 @@ fun AddTransactionDialog(
                     selectedIndex = selectedTypeIndex,
                     onItemSelected = {
                         selectedTypeIndex = it
+                        validationError = null
                         selectedCategory = when (it) {
                             0 -> Transaction.DEFAULT_EXPENSE_CATEGORIES.first()
                             1 -> Transaction.DEFAULT_INCOME_CATEGORIES.first()
-                            else -> "Chuyển tiền nội bộ"
+                            else -> "Chuyển khoản nội bộ"
                         }
                     }
                 )
@@ -82,7 +86,10 @@ fun AddTransactionDialog(
                 // Amount Input
                 OutlinedTextField(
                     value = amountText,
-                    onValueChange = { amountText = it.filter { char -> char.isDigit() } },
+                    onValueChange = {
+                        amountText = it.filter { char -> char.isDigit() }
+                        validationError = null
+                    },
                     label = { Text("Số tiền (VNĐ)", color = TextSecondary) },
                     placeholder = { Text("Ví dụ: 50000", color = TextTertiary) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -96,17 +103,16 @@ fun AddTransactionDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Category selector (for Expense / Income)
+                // Category selector with horizontal scroll (LazyRow)
                 if (selectedTypeIndex != 2) {
                     val categories = if (selectedTypeIndex == 0) Transaction.DEFAULT_EXPENSE_CATEGORIES else Transaction.DEFAULT_INCOME_CATEGORIES
                     Column {
-                        Text("Danh mục:", fontSize = 12.sp, color = TextSecondary)
+                        Text("Danh mục:", fontSize = 11.sp, color = TextSecondary)
                         Spacer(modifier = Modifier.height(6.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
+                        LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            categories.take(3).forEach { cat ->
+                            items(categories) { cat ->
                                 val isSel = selectedCategory == cat
                                 Box(
                                     modifier = Modifier
@@ -120,7 +126,8 @@ fun AddTransactionDialog(
                                         text = cat,
                                         fontSize = 12.sp,
                                         color = if (isSel) LiquidCyan else TextSecondary,
-                                        fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
+                                        fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
+                                        maxLines = 1
                                     )
                                 }
                             }
@@ -128,61 +135,67 @@ fun AddTransactionDialog(
                     }
                 }
 
-                // Account selection
+                // Account selection with LazyRow
                 Column {
                     Text(
-                        text = if (selectedTypeIndex == 2) "Tài khoản nguồn (Trừ tiền):" else "Tài khoản thanh toán:",
-                        fontSize = 12.sp,
+                        text = if (selectedTypeIndex == 2) "Từ tài khoản (Nguồn):" else "Tài khoản thanh toán:",
+                        fontSize = 11.sp,
                         color = TextSecondary
                     )
                     Spacer(modifier = Modifier.height(6.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
+                    LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        accounts.take(3).forEach { acc ->
+                        items(accounts) { acc ->
                             val isSel = selectedAccountId == acc.id
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(12.dp))
                                     .background(if (isSel) LiquidCyan.copy(alpha = 0.25f) else Color.White.copy(alpha = 0.05f))
                                     .border(1.dp, if (isSel) LiquidCyan else GlassBorderStroke, RoundedCornerShape(12.dp))
-                                    .clickable { selectedAccountId = acc.id }
-                                    .padding(horizontal = 8.dp, vertical = 6.dp)
+                                    .clickable {
+                                        selectedAccountId = acc.id
+                                        validationError = null
+                                    }
+                                    .padding(horizontal = 9.dp, vertical = 6.dp)
                             ) {
                                 Text(
-                                    text = acc.name.take(12),
+                                    text = acc.name,
                                     fontSize = 11.sp,
-                                    color = if (isSel) LiquidCyan else TextSecondary
+                                    color = if (isSel) LiquidCyan else TextSecondary,
+                                    maxLines = 1
                                 )
                             }
                         }
                     }
                 }
 
-                // Target account (if Transfer)
+                // Target account (for Transfer)
                 if (selectedTypeIndex == 2) {
                     Column {
-                        Text("Tài khoản đích (Cộng tiền):", fontSize = 12.sp, color = TextSecondary)
+                        Text("Đến tài khoản (Đích):", fontSize = 11.sp, color = TextSecondary)
                         Spacer(modifier = Modifier.height(6.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
+                        LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            accounts.filter { it.id != selectedAccountId }.take(3).forEach { acc ->
+                            items(accounts.filter { it.id != selectedAccountId }) { acc ->
                                 val isSel = selectedTargetAccountId == acc.id
                                 Box(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(12.dp))
                                         .background(if (isSel) LiquidEmerald.copy(alpha = 0.25f) else Color.White.copy(alpha = 0.05f))
                                         .border(1.dp, if (isSel) LiquidEmerald else GlassBorderStroke, RoundedCornerShape(12.dp))
-                                        .clickable { selectedTargetAccountId = acc.id }
-                                        .padding(horizontal = 8.dp, vertical = 6.dp)
+                                        .clickable {
+                                            selectedTargetAccountId = acc.id
+                                            validationError = null
+                                        }
+                                        .padding(horizontal = 9.dp, vertical = 6.dp)
                                 ) {
                                     Text(
-                                        text = acc.name.take(12),
+                                        text = acc.name,
                                         fontSize = 11.sp,
-                                        color = if (isSel) LiquidEmerald else TextSecondary
+                                        color = if (isSel) LiquidEmerald else TextSecondary,
+                                        maxLines = 1
                                     )
                                 }
                             }
@@ -194,8 +207,8 @@ fun AddTransactionDialog(
                 OutlinedTextField(
                     value = noteText,
                     onValueChange = { noteText = it },
-                    label = { Text("Ghi chú / Nội dung", color = TextSecondary) },
-                    placeholder = { Text("Ví dụ: Tiền cơm trưa, mua giáo trình...", color = TextTertiary) },
+                    label = { Text("Ghi chú", color = TextSecondary) },
+                    placeholder = { Text("Nội dung giao dịch...", color = TextTertiary) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = TextPrimary,
@@ -206,6 +219,11 @@ fun AddTransactionDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
 
+                // Error alert
+                validationError?.let { err ->
+                    Text(text = err, color = LiquidRose, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                }
+
                 // Action Buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -213,38 +231,43 @@ fun AddTransactionDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text("Hủy", color = TextSecondary)
+                        Text("Hủy", color = TextSecondary, fontSize = 13.sp)
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     Button(
                         onClick = {
                             val parsedAmount = amountText.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                            if (parsedAmount > BigDecimal.ZERO) {
-                                val txType = when (selectedTypeIndex) {
-                                    1 -> TransactionType.INCOME
-                                    2 -> TransactionType.TRANSFER
-                                    else -> TransactionType.EXPENSE
-                                }
-                                onSave(
-                                    txType,
-                                    parsedAmount,
-                                    dateStr,
-                                    selectedAccountId,
-                                    if (txType == TransactionType.TRANSFER) selectedTargetAccountId else null,
-                                    selectedCategory,
-                                    noteText
-                                )
-                                onDismiss()
+                            if (parsedAmount <= BigDecimal.ZERO) {
+                                validationError = "Vui lòng nhập số tiền hợp lệ (> 0)"
+                                return@Button
                             }
+                            if (selectedTypeIndex == 2 && selectedAccountId == selectedTargetAccountId) {
+                                validationError = "Tài khoản nguồn và đích phải khác nhau"
+                                return@Button
+                            }
+                            val txType = when (selectedTypeIndex) {
+                                1 -> TransactionType.INCOME
+                                2 -> TransactionType.TRANSFER
+                                else -> TransactionType.EXPENSE
+                            }
+                            onSave(
+                                txType,
+                                parsedAmount,
+                                dateStr,
+                                selectedAccountId,
+                                if (txType == TransactionType.TRANSFER) selectedTargetAccountId else null,
+                                selectedCategory,
+                                noteText
+                            )
+                            onDismiss()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = LiquidCyan),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("Lưu giao dịch", color = DarkObsidian, fontWeight = FontWeight.Bold)
+                        Text("Lưu", color = DarkObsidian, fontWeight = FontWeight.Bold, fontSize = 13.sp, maxLines = 1)
                     }
                 }
             }
         }
     }
 }
-

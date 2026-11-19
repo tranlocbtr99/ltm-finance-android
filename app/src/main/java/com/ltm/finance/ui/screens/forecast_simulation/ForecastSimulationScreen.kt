@@ -2,10 +2,10 @@ package com.ltm.finance.ui.screens.forecast_simulation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ltm.finance.domain.FinanceEngine
@@ -32,12 +33,13 @@ fun ForecastSimulationScreen(
     viewModel: MainViewModel
 ) {
     var mainTab by remember { mutableIntStateOf(0) }
-    val mainTabs = listOf("Dự báo dòng tiền (FR-019)", "Mô phỏng quyết định (FR-021)")
+    // Concise tab titles to prevent text wrapping on mobile
+    val mainTabs = listOf("Dự báo dòng tiền", "Mô phỏng mua sắm")
 
     val forecast by viewModel.currentForecast.collectAsState()
     val simulationResult by viewModel.purchaseSimulation.collectAsState()
 
-    var itemName by remember { mutableStateOf("Laptop phục vụ học tập") }
+    var itemName by remember { mutableStateOf("Laptop học tập") }
     var itemPriceText by remember { mutableStateOf("20000000") }
     var installmentMonths by remember { mutableIntStateOf(6) }
 
@@ -52,14 +54,14 @@ fun ForecastSimulationScreen(
         item {
             Column {
                 Text(
-                    text = "DỰ BÁO & MÔ PHỎNG TƯƠNG LAI",
+                    text = "DỰ BÁO & MÔ PHỎNG",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.5.sp,
                     color = LiquidCyan
                 )
                 Text(
-                    text = "Lập kế hoạch chủ động",
+                    text = "Lập kế hoạch tương lai",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary
@@ -76,7 +78,7 @@ fun ForecastSimulationScreen(
         }
 
         if (mainTab == 0) {
-            // 1. Forecast Periods Filter
+            // 1. Forecast Periods Filter with interactive click
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -90,6 +92,7 @@ fun ForecastSimulationScreen(
                                 .clip(RoundedCornerShape(14.dp))
                                 .background(if (isSelected) LiquidCyan.copy(alpha = 0.25f) else GlassBaseLight)
                                 .border(1.dp, if (isSelected) LiquidCyan else GlassBorderStroke, RoundedCornerShape(14.dp))
+                                .clickable { viewModel.setForecastDays(days) }
                                 .padding(vertical = 10.dp),
                             contentAlignment = Alignment.Center
                         ) {
@@ -97,7 +100,8 @@ fun ForecastSimulationScreen(
                                 text = label,
                                 fontSize = 13.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isSelected) LiquidCyan else TextSecondary
+                                color = if (isSelected) LiquidCyan else TextSecondary,
+                                maxLines = 1
                             )
                         }
                     }
@@ -116,7 +120,7 @@ fun ForecastSimulationScreen(
                             .padding(18.dp)
                     ) {
                         Text(
-                            text = "KẾT QUẢ DỰ BÁO ${forecast.daysCount} NGÀY TỚI",
+                            text = "KẾT QUẢ DỰ BÁO ${forecast.daysCount} NGÀY",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp,
@@ -128,30 +132,33 @@ fun ForecastSimulationScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Column {
-                                Text("Số dư hiện tại", fontSize = 11.sp, color = TextSecondary)
+                                Text("Số dư đầu", fontSize = 11.sp, color = TextSecondary, maxLines = 1)
                                 Text(
                                     text = FinanceEngine.formatVnd(forecast.startBalance),
-                                    fontSize = 15.sp,
+                                    fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = TextPrimary
+                                    color = TextPrimary,
+                                    maxLines = 1
                                 )
                             }
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("Điểm thấp nhất", fontSize = 11.sp, color = TextSecondary)
+                                Text("Thấp nhất", fontSize = 11.sp, color = TextSecondary, maxLines = 1)
                                 Text(
                                     text = FinanceEngine.formatVnd(forecast.minBalance),
-                                    fontSize = 15.sp,
+                                    fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (forecast.minBalance < BigDecimal.ZERO) LiquidRose else LiquidCyan
+                                    color = if (forecast.minBalance < BigDecimal.ZERO) LiquidRose else LiquidCyan,
+                                    maxLines = 1
                                 )
                             }
                             Column(horizontalAlignment = Alignment.End) {
-                                Text("Dự kiến kết thúc", fontSize = 11.sp, color = TextSecondary)
+                                Text("Dự kiến cuối", fontSize = 11.sp, color = TextSecondary, maxLines = 1)
                                 Text(
                                     text = FinanceEngine.formatVnd(forecast.endBalance),
-                                    fontSize = 15.sp,
+                                    fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (forecast.endBalance > forecast.startBalance) LiquidEmerald else LiquidRose
+                                    color = if (forecast.endBalance >= forecast.startBalance) LiquidEmerald else LiquidRose,
+                                    maxLines = 1
                                 )
                             }
                         }
@@ -178,24 +185,25 @@ fun ForecastSimulationScreen(
                                     imageVector = Icons.Default.Warning,
                                     contentDescription = null,
                                     tint = LiquidRose,
-                                    modifier = Modifier.size(20.dp)
+                                    modifier = Modifier.size(18.dp)
                                 )
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "CẢNH BÁO THIẾU HỤT DÒNG TIỀN (${alert.date})",
+                                    text = "NGUY CƠ THIẾU TIỀN (${alert.date})",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = LiquidRose
+                                    color = LiquidRose,
+                                    maxLines = 1
                                 )
                             }
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "Dự kiến số dư âm khoảng ${FinanceEngine.formatVnd(alert.estimatedShortage)}. Nguyên nhân: ${alert.reason}",
+                                text = "Thiếu khoảng ${FinanceEngine.formatVnd(alert.estimatedShortage)}. ${alert.reason}",
                                 fontSize = 13.sp,
                                 color = TextPrimary
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text("Giải pháp khuyến nghị:", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TextSecondary)
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text("Khuyến nghị:", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TextSecondary)
                             alert.solutions.forEach { sol ->
                                 Text("• $sol", fontSize = 11.sp, color = TextSecondary)
                             }
@@ -207,14 +215,14 @@ fun ForecastSimulationScreen(
             // 4. Daily Timeline Items
             item {
                 Text(
-                    text = "Dòng sự kiện tài chính theo ngày:",
+                    text = "Dòng tiền theo ngày:",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary
                 )
             }
 
-            items(forecast.dailyForecasts.take(15)) { day ->
+            items(forecast.dailyForecasts.take(20)) { day ->
                 LiquidGlassCard(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -227,24 +235,23 @@ fun ForecastSimulationScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column {
+                        Column(modifier = Modifier.weight(1f)) {
                             Text(day.date, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                            if (day.notes.isNotEmpty()) {
-                                Text(
-                                    text = day.notes.first(),
-                                    fontSize = 11.sp,
-                                    color = if (day.isShortage) LiquidRose else TextSecondary
-                                )
-                            } else {
-                                Text("Duy trì chi tiêu sinh hoạt bình thường", fontSize = 11.sp, color = TextTertiary)
-                            }
+                            Text(
+                                text = day.notes.firstOrNull() ?: "Duy trì sinh hoạt đều",
+                                fontSize = 11.sp,
+                                color = if (day.isShortage) LiquidRose else TextSecondary,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
                         }
 
                         Text(
                             text = FinanceEngine.formatVnd(day.projectedBalance),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (day.isShortage) LiquidRose else LiquidCyan
+                            color = if (day.isShortage) LiquidRose else LiquidCyan,
+                            maxLines = 1
                         )
                     }
                 }
@@ -272,7 +279,7 @@ fun ForecastSimulationScreen(
                         OutlinedTextField(
                             value = itemName,
                             onValueChange = { itemName = it },
-                            label = { Text("Tên sản phẩm / Thiết bị", color = TextSecondary) },
+                            label = { Text("Tên sản phẩm", color = TextSecondary) },
                             singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedTextColor = TextPrimary,
@@ -286,7 +293,7 @@ fun ForecastSimulationScreen(
                         OutlinedTextField(
                             value = itemPriceText,
                             onValueChange = { itemPriceText = it.filter { c -> c.isDigit() } },
-                            label = { Text("Giá tiền dự kiến (VNĐ)", color = TextSecondary) },
+                            label = { Text("Giá tiền (VNĐ)", color = TextSecondary) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
@@ -307,7 +314,7 @@ fun ForecastSimulationScreen(
                             colors = ButtonDefaults.buttonColors(containerColor = LiquidCyan),
                             shape = RoundedCornerShape(14.dp)
                         ) {
-                            Text("Chạy mô phỏng 4 phương án", color = DarkObsidian, fontWeight = FontWeight.Bold)
+                            Text("Chạy mô phỏng 4 phương án", color = DarkObsidian, fontWeight = FontWeight.Bold, maxLines = 1)
                         }
                     }
                 }
@@ -359,7 +366,7 @@ fun ForecastSimulationScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(opt.optionName, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                                Text(opt.optionName, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextPrimary, maxLines = 1)
                                 Box(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(8.dp))
@@ -367,19 +374,20 @@ fun ForecastSimulationScreen(
                                         .padding(horizontal = 8.dp, vertical = 2.dp)
                                 ) {
                                     Text(
-                                        text = if (opt.isAffordable) "Khả thi" else "Rủi ro cao",
+                                        text = if (opt.isAffordable) "Khả thi" else "Rủi ro",
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = if (opt.isAffordable) LiquidEmerald else LiquidRose
+                                        color = if (opt.isAffordable) LiquidEmerald else LiquidRose,
+                                        maxLines = 1
                                     )
                                 }
                             }
 
-                            Text("• Thanh toán ngay: ${FinanceEngine.formatVnd(opt.immediatePayment)}", fontSize = 12.sp, color = TextSecondary)
+                            Text("• Trả ngay: ${FinanceEngine.formatVnd(opt.immediatePayment)}", fontSize = 12.sp, color = TextSecondary)
                             if (opt.monthlyPayment > BigDecimal.ZERO) {
-                                Text("• Chi trả hàng tháng: ${FinanceEngine.formatVnd(opt.monthlyPayment)}", fontSize = 12.sp, color = TextSecondary)
+                                Text("• Trả hàng tháng: ${FinanceEngine.formatVnd(opt.monthlyPayment)}", fontSize = 12.sp, color = TextSecondary)
                             }
-                            Text("• Số dư còn lại sau quyết định: ${FinanceEngine.formatVnd(opt.remainingBalanceAfterPayment)}", fontSize = 12.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
+                            Text("• Số dư còn lại: ${FinanceEngine.formatVnd(opt.remainingBalanceAfterPayment)}", fontSize = 12.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(opt.riskSummary, fontSize = 11.sp, color = TextTertiary, lineHeight = 16.sp)
                         }
@@ -389,4 +397,3 @@ fun ForecastSimulationScreen(
         }
     }
 }
-

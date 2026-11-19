@@ -17,13 +17,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ltm.finance.data.model.Transaction
 import com.ltm.finance.data.model.TransactionType
 import com.ltm.finance.domain.FinanceEngine
 import com.ltm.finance.ui.MainViewModel
-import com.ltm.finance.ui.components.*
+import com.ltm.finance.ui.components.LiquidGlassCard
+import com.ltm.finance.ui.components.LiquidSegmentedControl
 import com.ltm.finance.ui.theme.*
 
 @Composable
@@ -34,7 +35,8 @@ fun TransactionsScreen(
     val transactions by viewModel.transactions.collectAsState()
     val accounts by viewModel.accounts.collectAsState()
     var selectedFilterIndex by remember { mutableIntStateOf(0) }
-    val filterOptions = listOf("Tất cả", "Chi tiêu", "Thu nhập", "Chuyển tiền")
+    // Concise filter titles to fit on all screens
+    val filterOptions = listOf("Tất cả", "Chi tiêu", "Thu nhập", "Chuyển khoản")
 
     val filteredList = remember(transactions, selectedFilterIndex) {
         when (selectedFilterIndex) {
@@ -48,9 +50,9 @@ fun TransactionsScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 18.dp),
+            .padding(horizontal = 16.dp),
         contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         // Header
         item {
@@ -78,24 +80,25 @@ fun TransactionsScreen(
                 // Add button pill
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
+                        .clip(RoundedCornerShape(18.dp))
                         .background(LiquidCyan)
                         .clickable { onOpenAddTransaction() }
-                        .padding(horizontal = 14.dp, vertical = 8.dp)
+                        .padding(horizontal = 12.dp, vertical = 7.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = null,
                             tint = DarkObsidian,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(15.dp)
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.width(3.dp))
                         Text(
                             text = "Ghi chép",
                             color = DarkObsidian,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1
                         )
                     }
                 }
@@ -121,9 +124,9 @@ fun TransactionsScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Chưa có giao dịch nào trong danh mục này",
+                        text = "Chưa có giao dịch trong danh mục này",
                         color = TextSecondary,
-                        fontSize = 14.sp
+                        fontSize = 13.sp
                     )
                 }
             }
@@ -134,12 +137,12 @@ fun TransactionsScreen(
 
                 LiquidGlassCard(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp)
+                    shape = RoundedCornerShape(18.dp)
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
@@ -155,7 +158,7 @@ fun TransactionsScreen(
                             }
                             Box(
                                 modifier = Modifier
-                                    .size(44.dp)
+                                    .size(38.dp)
                                     .clip(CircleShape)
                                     .background(iconColor.copy(alpha = 0.18f))
                                     .border(1.dp, iconColor.copy(alpha = 0.4f), CircleShape),
@@ -169,35 +172,39 @@ fun TransactionsScreen(
                                     },
                                     contentDescription = null,
                                     tint = iconColor,
-                                    modifier = Modifier.size(20.dp)
+                                    modifier = Modifier.size(18.dp)
                                 )
                             }
 
-                            Spacer(modifier = Modifier.width(14.dp))
+                            Spacer(modifier = Modifier.width(12.dp))
 
                             Column {
                                 Text(
                                     text = tx.category,
-                                    fontSize = 15.sp,
+                                    fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = TextPrimary
+                                    color = TextPrimary,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
-                                Spacer(modifier = Modifier.height(2.dp))
+                                Spacer(modifier = Modifier.height(1.dp))
                                 Text(
                                     text = if (tx.type == TransactionType.TRANSFER && targetAccount != null) {
-                                        "${account?.name ?: "Tài khoản"} ➔ ${targetAccount.name}"
+                                        "${account?.name ?: "Ví"} ➔ ${targetAccount.name}"
                                     } else {
                                         tx.note.ifBlank { account?.name ?: "Ví" }
                                     },
-                                    fontSize = 12.sp,
+                                    fontSize = 11.sp,
                                     color = TextSecondary,
-                                    maxLines = 1
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
-                                Spacer(modifier = Modifier.height(2.dp))
+                                Spacer(modifier = Modifier.height(1.dp))
                                 Text(
                                     text = tx.date,
-                                    fontSize = 11.sp,
-                                    color = TextTertiary
+                                    fontSize = 10.sp,
+                                    color = TextTertiary,
+                                    maxLines = 1
                                 )
                             }
                         }
@@ -217,15 +224,17 @@ fun TransactionsScreen(
                         Column(horizontalAlignment = Alignment.End) {
                             Text(
                                 text = "$amountPrefix${FinanceEngine.formatVnd(tx.amount)}",
-                                fontSize = 15.sp,
+                                fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = amountColor
+                                color = amountColor,
+                                maxLines = 1
                             )
                             if (tx.type == TransactionType.TRANSFER) {
                                 Text(
-                                    text = "Nội bộ (không tính thu/chi)",
+                                    text = "Chuyển nội bộ",
                                     fontSize = 9.sp,
-                                    color = TextTertiary
+                                    color = TextTertiary,
+                                    maxLines = 1
                                 )
                             }
                         }
@@ -235,4 +244,3 @@ fun TransactionsScreen(
         }
     }
 }
-

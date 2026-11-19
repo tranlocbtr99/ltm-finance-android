@@ -1,6 +1,5 @@
 package com.ltm.finance.ui
 
-import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,6 +7,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
+import androidx.compose.material.icons.automirrored.outlined.ReceiptLong
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -19,11 +21,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ltm.finance.domain.FinanceEngine
 import com.ltm.finance.ui.components.LiquidGlassBackground
-import com.ltm.finance.ui.components.LiquidGlassCard
 import com.ltm.finance.ui.screens.ai.AiAssistantScreen
 import com.ltm.finance.ui.screens.assets_debts.AccountsDebtsScreen
 import com.ltm.finance.ui.screens.budgets.BudgetsScreen
@@ -36,10 +37,10 @@ import com.ltm.finance.ui.theme.*
 
 enum class NavigationTab(val label: String, val icon: ImageVector, val selectedIcon: ImageVector) {
     OVERVIEW("Tổng quan", Icons.Outlined.Home, Icons.Filled.Home),
-    TRANSACTIONS("Giao dịch", Icons.Outlined.ReceiptLong, Icons.Filled.ReceiptLong),
+    TRANSACTIONS("Giao dịch", Icons.AutoMirrored.Outlined.ReceiptLong, Icons.AutoMirrored.Filled.ReceiptLong),
     BUDGETS("Ngân sách", Icons.Outlined.PieChart, Icons.Filled.PieChart),
     ACCOUNTS("Tài sản", Icons.Outlined.AccountBalanceWallet, Icons.Filled.AccountBalanceWallet),
-    AI("AI", Icons.Outlined.AutoAwesome, Icons.Filled.AutoAwesome)
+    AI("Trợ lý AI", Icons.Outlined.AutoAwesome, Icons.Filled.AutoAwesome)
 }
 
 @Composable
@@ -82,9 +83,9 @@ fun MainScreen(viewModel: MainViewModel) {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 IconButton(onClick = { showForecastSimulation = false }) {
-                                    Icon(Icons.Default.ArrowBack, contentDescription = "Quay lại", tint = TextPrimary)
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại", tint = TextPrimary)
                                 }
-                                Text("Quay lại", fontSize = 14.sp, color = TextPrimary)
+                                Text("Quay lại", fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
                             }
                             ForecastSimulationScreen(viewModel = viewModel)
                         }
@@ -99,9 +100,9 @@ fun MainScreen(viewModel: MainViewModel) {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 IconButton(onClick = { showResearchCenter = false }) {
-                                    Icon(Icons.Default.ArrowBack, contentDescription = "Quay lại", tint = TextPrimary)
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại", tint = TextPrimary)
                                 }
-                                Text("Quay lại", fontSize = 14.sp, color = TextPrimary)
+                                Text("Quay lại", fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
                             }
                             ResearchCenterScreen(viewModel = viewModel)
                         }
@@ -116,7 +117,8 @@ fun MainScreen(viewModel: MainViewModel) {
                                 onNavigateToAi = { currentTab = NavigationTab.AI },
                                 onNavigateToForecast = { showForecastSimulation = true },
                                 onNavigateToSimulation = { showForecastSimulation = true },
-                                onOpenAddTransaction = { showAddTransactionDialog = true }
+                                onOpenAddTransaction = { showAddTransactionDialog = true },
+                                onNavigateToResearch = { showResearchCenter = true }
                             )
                             NavigationTab.TRANSACTIONS -> TransactionsScreen(
                                 viewModel = viewModel,
@@ -132,26 +134,6 @@ fun MainScreen(viewModel: MainViewModel) {
                                 viewModel = viewModel,
                                 onNavigateToSimulation = { showForecastSimulation = true }
                             )
-                        }
-                    }
-                }
-
-                // Top right research center trigger pill on overview screen
-                if (!showForecastSimulation && !showResearchCenter && currentTab == NavigationTab.OVERVIEW) {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(top = 18.dp, end = 74.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(LiquidPurple.copy(alpha = 0.2f))
-                            .border(1.dp, LiquidPurple.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
-                            .clickable { showResearchCenter = true }
-                            .padding(horizontal = 10.dp, vertical = 5.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Science, contentDescription = null, tint = LiquidPurple, modifier = Modifier.size(14.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Nghiên cứu", fontSize = 11.sp, color = LiquidPurple, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -179,15 +161,15 @@ fun LiquidGlassBottomBar(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 18.dp, vertical = 14.dp),
+            .padding(horizontal = 14.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center
     ) {
-        // Floating iOS Liquid Glass Pill Bar
+        // Floating iOS Liquid Glass Pill Bar with weight(1f) to guarantee no text wrapping
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(32.dp))
-                .background(Color(0xFF0F172A).copy(alpha = 0.78f))
+                .background(Color(0xFF0F172A).copy(alpha = 0.88f))
                 .border(
                     width = 1.dp,
                     brush = Brush.verticalGradient(
@@ -198,11 +180,11 @@ fun LiquidGlassBottomBar(
                     ),
                     shape = RoundedCornerShape(32.dp)
                 )
-                .padding(horizontal = 8.dp, vertical = 6.dp)
+                .padding(horizontal = 6.dp, vertical = 6.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround,
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 NavigationTab.entries.forEach { tab ->
@@ -217,28 +199,29 @@ fun LiquidGlassBottomBar(
 
                     Column(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(20.dp))
+                            .weight(1f)
+                            .clip(RoundedCornerShape(18.dp))
                             .clickable { onTabSelected(tab) }
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                            .padding(vertical = 4.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = if (isSelected) tab.selectedIcon else tab.icon,
-                                contentDescription = tab.label,
-                                tint = if (isSelected) activeColor else TextSecondary,
-                                modifier = Modifier.size(22.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(2.dp))
+                        Icon(
+                            imageVector = if (isSelected) tab.selectedIcon else tab.icon,
+                            contentDescription = tab.label,
+                            tint = if (isSelected) activeColor else TextSecondary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.height(3.dp))
                         Text(
                             text = tab.label,
                             fontSize = 10.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) activeColor else TextSecondary
+                            color = if (isSelected) activeColor else TextSecondary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Clip
                         )
+                        Spacer(modifier = Modifier.height(2.dp))
                         if (isSelected) {
-                            Spacer(modifier = Modifier.height(2.dp))
                             Box(
                                 modifier = Modifier
                                     .size(4.dp)
@@ -246,7 +229,7 @@ fun LiquidGlassBottomBar(
                                     .background(activeColor)
                             )
                         } else {
-                            Spacer(modifier = Modifier.height(6.dp))
+                            Spacer(modifier = Modifier.size(4.dp))
                         }
                     }
                 }
@@ -254,4 +237,3 @@ fun LiquidGlassBottomBar(
         }
     }
 }
-

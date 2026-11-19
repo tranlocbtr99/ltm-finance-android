@@ -52,19 +52,20 @@ object SimulationEngine {
         )
 
         // 3. Mua trả góp N tháng
+        val validMonths = installmentMonths.coerceAtLeast(1)
         val feeRate = BigDecimal(1.0 + installmentFeePercent / 100.0)
         val totalInstallment = price.multiply(feeRate).setScale(0, RoundingMode.HALF_UP)
-        val monthlyPayment = totalInstallment.divide(BigDecimal(installmentMonths), 0, RoundingMode.HALF_UP)
+        val monthlyPayment = totalInstallment.divide(BigDecimal(validMonths), 0, RoundingMode.HALF_UP)
         val balanceAfterFirstMonth = currentLiquidCash.subtract(monthlyPayment)
         val isInstallmentAffordable = monthlySurplus > monthlyPayment && balanceAfterFirstMonth > BigDecimal.ZERO
         val installmentRisk = if (monthlyPayment > monthlySurplus) {
             "RỦI RO: Tiền trả góp (${FinanceEngine.formatVnd(monthlyPayment)}/tháng) vượt quá mức thặng dư chi tiêu (${FinanceEngine.formatVnd(monthlySurplus)}/tháng)!"
         } else {
-            "Áp lực vừa phải: Mỗi tháng trích ${FinanceEngine.formatVnd(monthlyPayment)} trong $installmentMonths tháng. Tổng tiền trả: ${FinanceEngine.formatVnd(totalInstallment)}."
+            "Áp lực vừa phải: Mỗi tháng trích ${FinanceEngine.formatVnd(monthlyPayment)} trong $validMonths tháng. Tổng tiền trả: ${FinanceEngine.formatVnd(totalInstallment)}."
         }
         options.add(
             PurchaseOption(
-                optionName = "Trả góp ($installmentMonths tháng)",
+                optionName = "Trả góp ($validMonths tháng)",
                 immediatePayment = monthlyPayment,
                 monthlyPayment = monthlyPayment,
                 totalPayment = totalInstallment,

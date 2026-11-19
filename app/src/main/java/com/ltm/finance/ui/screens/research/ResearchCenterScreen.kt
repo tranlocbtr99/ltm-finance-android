@@ -38,9 +38,9 @@ fun ResearchCenterScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 18.dp),
+            .padding(horizontal = 16.dp),
         contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         // Header
         item {
@@ -59,7 +59,7 @@ fun ResearchCenterScreen(
                     color = TextPrimary
                 )
                 Text(
-                    text = "Nghiên cứu quan sát theo chiều dọc (Longitudinal Observational Study)",
+                    text = "Nghiên cứu quan sát theo chiều dọc (Longitudinal Study)",
                     fontSize = 12.sp,
                     color = TextSecondary
                 )
@@ -70,33 +70,34 @@ fun ResearchCenterScreen(
         item {
             LiquidGlassCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(22.dp),
+                shape = RoundedCornerShape(20.dp),
                 backgroundColor = LiquidPurple.copy(alpha = 0.16f),
                 borderColor = LiquidPurple.copy(alpha = 0.5f)
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(18.dp),
+                        .padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
-                        Text("MÃ NGHIÊN CỨU ẨN DANH", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = LiquidPurple)
-                        Spacer(modifier = Modifier.height(4.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("MÃ NGHIÊN CỨU ẨN DANH", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = LiquidPurple, maxLines = 1)
+                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = userProfile.researchParticipantId,
-                            fontSize = 20.sp,
+                            fontSize = 18.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            color = TextPrimary
+                            color = TextPrimary,
+                            maxLines = 1
                         )
-                        Text("Dữ liệu được mã hóa riêng biệt với thông tin danh tính cá nhân", fontSize = 11.sp, color = TextSecondary)
+                        Text("Mã hóa tách rời danh tính cá nhân", fontSize = 11.sp, color = TextSecondary, maxLines = 1)
                     }
                     Icon(
                         imageVector = Icons.Default.Science,
                         contentDescription = null,
                         tint = LiquidPurple,
-                        modifier = Modifier.size(36.dp)
+                        modifier = Modifier.size(32.dp)
                     )
                 }
             }
@@ -104,17 +105,17 @@ fun ResearchCenterScreen(
 
         // Research Metrics Grid
         item {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = "Chỉ số khoa học đang theo dõi:",
-                    fontSize = 14.sp,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary
                 )
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     MetricMiniCard(
                         title = "Tuân thủ ngân sách",
@@ -123,7 +124,7 @@ fun ResearchCenterScreen(
                         modifier = Modifier.weight(1f)
                     )
                     MetricMiniCard(
-                        title = "Chấp nhận AI",
+                        title = "Chấp nhận lời khuyên",
                         value = "${metrics.adviceAcceptedRate.toInt()}%",
                         color = LiquidCyan,
                         modifier = Modifier.weight(1f)
@@ -132,7 +133,7 @@ fun ResearchCenterScreen(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     MetricMiniCard(
                         title = "Thực hiện lời khuyên",
@@ -154,22 +155,22 @@ fun ResearchCenterScreen(
         item {
             LiquidGlassCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(22.dp)
+                shape = RoundedCornerShape(20.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(18.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = "Phân tách sự đồng ý (Consent Management)",
+                        text = "Phân tách sự đồng ý (Consent)",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextPrimary
                     )
                     Text(
-                        text = "Theo quy định PRD Section 10 và Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15, người dùng có quyền bật/tắt từng mục độc lập.",
+                        text = "Theo PRD Section 10 và Luật Bảo vệ dữ liệu cá nhân VN, bật/tắt từng mục độc lập mà không mất quyền dùng app.",
                         fontSize = 11.sp,
                         color = TextSecondary
                     )
@@ -181,8 +182,8 @@ fun ResearchCenterScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Điều khoản dịch vụ app", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                            Text("Quản lý tài khoản và ghi nhận thu chi cơ bản", fontSize = 11.sp, color = TextSecondary)
+                            Text("Điều khoản dịch vụ app", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary, maxLines = 1)
+                            Text("Quản lý tài chính cá nhân cơ bản", fontSize = 11.sp, color = TextSecondary, maxLines = 1)
                         }
                         Switch(
                             checked = termsConsent,
@@ -201,8 +202,8 @@ fun ResearchCenterScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Xử lý dữ liệu AI cá nhân hóa", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                            Text("Cho phép AI phân tích và đưa cảnh báo chủ động", fontSize = 11.sp, color = TextSecondary)
+                            Text("Xử lý dữ liệu AI cá nhân hóa", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary, maxLines = 1)
+                            Text("Tư vấn và cảnh báo chủ động", fontSize = 11.sp, color = TextSecondary, maxLines = 1)
                         }
                         Switch(
                             checked = aiConsent,
@@ -221,8 +222,8 @@ fun ResearchCenterScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Tham gia nghiên cứu khoa học", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                            Text("Ghi nhận nhật ký ẩn danh phục vụ bài báo học thuật (Rút đồng ý không ảnh hưởng tính năng app)", fontSize = 11.sp, color = TextSecondary)
+                            Text("Tham gia nghiên cứu khoa học", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary, maxLines = 1)
+                            Text("Nhật ký ẩn danh phục vụ bài báo học thuật", fontSize = 11.sp, color = TextSecondary, maxLines = 1)
                         }
                         Switch(
                             checked = researchConsent,
@@ -241,38 +242,38 @@ fun ResearchCenterScreen(
         item {
             LiquidGlassCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(22.dp)
+                shape = RoundedCornerShape(20.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(18.dp),
+                        .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Text(
-                        text = "Xuất dữ liệu nghiên cứu (Research Export)",
+                        text = "Xuất dữ liệu nghiên cứu (Export)",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextPrimary
                     )
                     Text(
-                        text = "Xuất bản ghi sự kiện theo cấu trúc chuẩn phục vụ SPSS, R hoặc Python.",
-                        fontSize = 12.sp,
+                        text = "Xuất nhật ký sự kiện chuẩn CSV phục vụ SPSS, R hoặc Python.",
+                        fontSize = 11.sp,
                         color = TextSecondary
                     )
 
                     Button(
                         onClick = {
                             val csv = ResearchEngine.exportToCsv(events)
-                            exportMessage = "Đã xuất thành công ${events.size} bản ghi sự kiện nghiên cứu (CSV)!"
+                            exportMessage = "Đã xuất ${events.size} sự kiện ra chuẩn CSV!"
                         },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(containerColor = LiquidPurple),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Xuất CSV cho SPSS / Python", fontWeight = FontWeight.Bold)
+                        Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(17.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Xuất CSV cho SPSS / Python", fontWeight = FontWeight.Bold, fontSize = 13.sp, maxLines = 1)
                     }
 
                     exportMessage?.let { msg ->
@@ -298,20 +299,20 @@ fun MetricMiniCard(
 ) {
     LiquidGlassCard(
         modifier = modifier,
-        shape = RoundedCornerShape(18.dp)
+        shape = RoundedCornerShape(16.dp)
     ) {
         Column(
-            modifier = Modifier.padding(14.dp)
+            modifier = Modifier.padding(12.dp)
         ) {
-            Text(title, fontSize = 11.sp, color = TextSecondary)
-            Spacer(modifier = Modifier.height(4.dp))
+            Text(title, fontSize = 10.sp, color = TextSecondary, maxLines = 1)
+            Spacer(modifier = Modifier.height(3.dp))
             Text(
                 text = value,
-                fontSize = 18.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = color
+                color = color,
+                maxLines = 1
             )
         }
     }
 }
-

@@ -2,17 +2,16 @@ package com.ltm.finance.ui.screens.budgets
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -43,9 +43,9 @@ fun BudgetsScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 18.dp),
+            .padding(horizontal = 16.dp),
         contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         // Header
         item {
@@ -64,7 +64,7 @@ fun BudgetsScreen(
                     color = TextPrimary
                 )
                 Text(
-                    text = "Hệ thống tự động theo dõi và cảnh báo khi chạm ngưỡng 80% và 100%",
+                    text = "Tự động theo dõi và cảnh báo ngưỡng 80% & 100%",
                     fontSize = 12.sp,
                     color = TextSecondary
                 )
@@ -81,52 +81,57 @@ fun BudgetsScreen(
 
             LiquidGlassCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(22.dp)
+                shape = RoundedCornerShape(20.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(18.dp)
+                        .padding(16.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f, fill = false)
+                        ) {
                             Text(
                                 text = budget.category,
-                                fontSize = 17.sp,
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = TextPrimary
+                                color = TextPrimary,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                             if (budget.isOverBudget) {
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
                                 Box(
                                     modifier = Modifier
-                                        .clip(RoundedCornerShape(8.dp))
+                                        .clip(RoundedCornerShape(6.dp))
                                         .background(LiquidRose.copy(alpha = 0.2f))
-                                        .border(1.dp, LiquidRose.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
-                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        .border(1.dp, LiquidRose.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
+                                        .padding(horizontal = 5.dp, vertical = 2.dp)
                                 ) {
-                                    Text("Vượt hạn mức!", fontSize = 10.sp, color = LiquidRose, fontWeight = FontWeight.Bold)
+                                    Text("Vượt!", fontSize = 10.sp, color = LiquidRose, fontWeight = FontWeight.Bold, maxLines = 1)
                                 }
                             } else if (budget.isNearLimit) {
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
                                 Box(
                                     modifier = Modifier
-                                        .clip(RoundedCornerShape(8.dp))
+                                        .clip(RoundedCornerShape(6.dp))
                                         .background(LiquidAmber.copy(alpha = 0.2f))
-                                        .border(1.dp, LiquidAmber.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
-                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        .border(1.dp, LiquidAmber.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
+                                        .padding(horizontal = 5.dp, vertical = 2.dp)
                                 ) {
-                                    Text("Cảnh báo 80%", fontSize = 10.sp, color = LiquidAmber, fontWeight = FontWeight.Bold)
+                                    Text(">80%", fontSize = 10.sp, color = LiquidAmber, fontWeight = FontWeight.Bold, maxLines = 1)
                                 }
                             }
                         }
 
                         // Edit / History actions
-                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                             if (budget.adjustments.isNotEmpty()) {
                                 IconButton(
                                     onClick = { historyBudget = budget },
@@ -134,9 +139,9 @@ fun BudgetsScreen(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.History,
-                                        contentDescription = "Lịch sử điều chỉnh",
+                                        contentDescription = "Lịch sử",
                                         tint = TextSecondary,
-                                        modifier = Modifier.size(18.dp)
+                                        modifier = Modifier.size(17.dp)
                                     )
                                 }
                             }
@@ -146,15 +151,15 @@ fun BudgetsScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Edit,
-                                    contentDescription = "Điều chỉnh",
+                                    contentDescription = "Sửa",
                                     tint = LiquidCyan,
-                                    modifier = Modifier.size(18.dp)
+                                    modifier = Modifier.size(17.dp)
                                 )
                             }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     LiquidProgressBar(
                         progressPercent = budget.usagePercent,
@@ -169,32 +174,35 @@ fun BudgetsScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Column {
-                            Text("Đã chi tiêu", fontSize = 11.sp, color = TextSecondary)
+                            Text("Đã chi", fontSize = 11.sp, color = TextSecondary, maxLines = 1)
                             Text(
                                 text = FinanceEngine.formatVnd(budget.spentAmount),
-                                fontSize = 14.sp,
+                                fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = statusColor
+                                color = statusColor,
+                                maxLines = 1
                             )
                         }
 
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Tỷ lệ", fontSize = 11.sp, color = TextSecondary)
+                            Text("Tỷ lệ", fontSize = 11.sp, color = TextSecondary, maxLines = 1)
                             Text(
                                 text = "${budget.usagePercent}%",
-                                fontSize = 14.sp,
+                                fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = TextPrimary
+                                color = TextPrimary,
+                                maxLines = 1
                             )
                         }
 
                         Column(horizontalAlignment = Alignment.End) {
-                            Text("Hạn mức ngân sách", fontSize = 11.sp, color = TextSecondary)
+                            Text("Hạn mức", fontSize = 11.sp, color = TextSecondary, maxLines = 1)
                             Text(
                                 text = FinanceEngine.formatVnd(budget.currentAmount),
-                                fontSize = 14.sp,
+                                fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = TextPrimary
+                                color = TextPrimary,
+                                maxLines = 1
                             )
                         }
                     }
@@ -203,7 +211,7 @@ fun BudgetsScreen(
         }
     }
 
-    // FR-016: Budget Adjustment Dialog
+    // FR-016: Budget Adjustment Dialog with scroll support
     editingBudget?.let { b ->
         var newAmountText by remember { mutableStateOf(b.currentAmount.toPlainString()) }
         var reasonText by remember { mutableStateOf("") }
@@ -212,32 +220,33 @@ fun BudgetsScreen(
             LiquidGlassCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                shape = RoundedCornerShape(24.dp),
-                backgroundColor = Color(0xFF0F172A).copy(alpha = 0.95f)
+                    .padding(vertical = 14.dp),
+                shape = RoundedCornerShape(22.dp),
+                backgroundColor = Color(0xFF0F172A).copy(alpha = 0.96f)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                        .padding(18.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = "Điều chỉnh ngân sách ${b.category}",
-                        fontSize = 17.sp,
+                        text = "Sửa ngân sách ${b.category}",
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextPrimary
                     )
                     Text(
-                        text = "Theo quy định FR-016, mọi thay đổi ngân sách sẽ được lưu vào lịch sử truy vết.",
-                        fontSize = 12.sp,
+                        text = "Lưu vết lịch sử thay đổi theo chuẩn FR-016.",
+                        fontSize = 11.sp,
                         color = TextSecondary
                     )
 
                     OutlinedTextField(
                         value = newAmountText,
                         onValueChange = { newAmountText = it.filter { c -> c.isDigit() } },
-                        label = { Text("Số tiền ngân sách mới (VNĐ)", color = TextSecondary) },
+                        label = { Text("Số tiền mới (VNĐ)", color = TextSecondary) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
@@ -253,7 +262,7 @@ fun BudgetsScreen(
                         value = reasonText,
                         onValueChange = { reasonText = it },
                         label = { Text("Lý do điều chỉnh", color = TextSecondary) },
-                        placeholder = { Text("Ví dụ: Bổ sung kinh phí liên hoan lớp...", color = TextTertiary) },
+                        placeholder = { Text("Ví dụ: Bổ sung kinh phí...", color = TextTertiary) },
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = TextPrimary,
@@ -269,9 +278,9 @@ fun BudgetsScreen(
                         horizontalArrangement = Arrangement.End
                     ) {
                         TextButton(onClick = { editingBudget = null }) {
-                            Text("Hủy", color = TextSecondary)
+                            Text("Hủy", color = TextSecondary, fontSize = 13.sp)
                         }
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
                         Button(
                             onClick = {
                                 val amt = newAmountText.toBigDecimalOrNull() ?: b.currentAmount
@@ -279,9 +288,9 @@ fun BudgetsScreen(
                                 editingBudget = null
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = LiquidCyan),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(10.dp)
                         ) {
-                            Text("Xác nhận", color = DarkObsidian, fontWeight = FontWeight.Bold)
+                            Text("Xác nhận", color = DarkObsidian, fontWeight = FontWeight.Bold, fontSize = 13.sp, maxLines = 1)
                         }
                     }
                 }
@@ -289,32 +298,34 @@ fun BudgetsScreen(
         }
     }
 
-    // FR-016: History View Dialog
+    // FR-016: History View Dialog with scroll support
     historyBudget?.let { b ->
         Dialog(onDismissRequest = { historyBudget = null }) {
             LiquidGlassCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                shape = RoundedCornerShape(24.dp),
-                backgroundColor = Color(0xFF0F172A).copy(alpha = 0.95f)
+                    .heightIn(max = 480.dp)
+                    .padding(vertical = 14.dp),
+                shape = RoundedCornerShape(22.dp),
+                backgroundColor = Color(0xFF0F172A).copy(alpha = 0.96f)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                        .padding(18.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Text(
-                        text = "Lịch sử điều chỉnh: ${b.category}",
-                        fontSize = 17.sp,
+                        text = "Lịch sử: ${b.category}",
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextPrimary
                     )
 
                     Text(
-                        text = "Ngân sách ban đầu: ${FinanceEngine.formatVnd(b.originalAmount)}",
-                        fontSize = 13.sp,
+                        text = "Gốc ban đầu: ${FinanceEngine.formatVnd(b.originalAmount)}",
+                        fontSize = 12.sp,
                         color = TextSecondary
                     )
 
@@ -322,9 +333,9 @@ fun BudgetsScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(14.dp))
+                                .clip(RoundedCornerShape(12.dp))
                                 .background(Color.White.copy(alpha = 0.05f))
-                                .padding(12.dp)
+                                .padding(10.dp)
                         ) {
                             Column {
                                 Row(
@@ -334,28 +345,29 @@ fun BudgetsScreen(
                                     Text(
                                         text = "${FinanceEngine.formatVnd(adj.previousAmount)} ➔ ${FinanceEngine.formatVnd(adj.newAmount)}",
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = 13.sp,
-                                        color = LiquidCyan
+                                        fontSize = 12.sp,
+                                        color = LiquidCyan,
+                                        maxLines = 1
                                     )
-                                    Text(adj.modifiedBy, fontSize = 11.sp, color = TextTertiary)
+                                    Text(adj.modifiedBy, fontSize = 10.sp, color = TextTertiary, maxLines = 1)
                                 }
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text("Lý do: ${adj.reason}", fontSize = 12.sp, color = TextSecondary)
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text("Lý do: ${adj.reason}", fontSize = 11.sp, color = TextSecondary)
                             }
                         }
                     }
 
+                    Spacer(modifier = Modifier.height(4.dp))
                     Button(
                         onClick = { historyBudget = null },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(containerColor = GlassBaseLight),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text("Đóng", color = TextPrimary)
+                        Text("Đóng", color = TextPrimary, fontSize = 13.sp)
                     }
                 }
             }
         }
     }
 }
-

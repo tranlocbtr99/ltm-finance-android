@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,12 +19,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ltm.finance.data.model.AdviceFeedback
-import com.ltm.finance.data.model.AiRecommendation
 import com.ltm.finance.data.model.RecommendationStatus
-import com.ltm.finance.data.model.VerificationResult
 import com.ltm.finance.ui.MainViewModel
 import com.ltm.finance.ui.components.LiquidGlassCard
 import com.ltm.finance.ui.components.LiquidSegmentedControl
@@ -38,7 +38,8 @@ fun AiAssistantScreen(
     val chatMessages by viewModel.chatMessages.collectAsState()
     val recommendations by viewModel.recommendations.collectAsState()
     var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Trò chuyện AI (On-demand)", "Nhật ký Lời khuyên (FR-024)")
+    // Concise tab titles to prevent text wrapping on mobile
+    val tabs = listOf("Trò chuyện AI", "Nhật ký Lời khuyên")
 
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
@@ -54,9 +55,9 @@ fun AiAssistantScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 18.dp)
+            .padding(horizontal = 16.dp)
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         // Header
         Column {
@@ -75,7 +76,7 @@ fun AiAssistantScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // Tab switcher
         LiquidSegmentedControl(
@@ -84,7 +85,7 @@ fun AiAssistantScreen(
             onItemSelected = { selectedTab = it }
         )
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         if (selectedTab == 0) {
             // Tab 1: On-demand Chat
@@ -93,7 +94,7 @@ fun AiAssistantScreen(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(bottom = 16.dp)
             ) {
                 // Quick prompt suggestions
@@ -101,7 +102,7 @@ fun AiAssistantScreen(
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text(
                             text = "Gợi ý câu hỏi:",
-                            fontSize = 12.sp,
+                            fontSize = 11.sp,
                             color = TextSecondary,
                             fontWeight = FontWeight.Medium
                         )
@@ -109,16 +110,16 @@ fun AiAssistantScreen(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clip(RoundedCornerShape(14.dp))
+                                    .clip(RoundedCornerShape(12.dp))
                                     .background(GlassBaseLight)
-                                    .border(1.dp, GlassBorderStroke, RoundedCornerShape(14.dp))
+                                    .border(1.dp, GlassBorderStroke, RoundedCornerShape(12.dp))
                                     .clickable {
                                         viewModel.sendChatMessage(prompt)
                                         coroutineScope.launch {
                                             listState.animateScrollToItem(chatMessages.size)
                                         }
                                     }
-                                    .padding(horizontal = 14.dp, vertical = 9.dp)
+                                    .padding(horizontal = 12.dp, vertical = 8.dp)
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(
@@ -127,11 +128,13 @@ fun AiAssistantScreen(
                                         tint = LiquidCyan,
                                         modifier = Modifier.size(14.dp)
                                     )
-                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Spacer(modifier = Modifier.width(6.dp))
                                     Text(
                                         text = prompt,
                                         fontSize = 12.sp,
-                                        color = TextPrimary
+                                        color = TextPrimary,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                 }
                             }
@@ -150,13 +153,13 @@ fun AiAssistantScreen(
                             Box(
                                 modifier = Modifier
                                     .widthIn(max = 280.dp)
-                                    .clip(RoundedCornerShape(topStart = 18.dp, topEnd = 4.dp, bottomStart = 18.dp, bottomEnd = 18.dp))
+                                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 4.dp, bottomStart = 16.dp, bottomEnd = 16.dp))
                                     .background(LiquidCyan)
-                                    .padding(14.dp)
+                                    .padding(12.dp)
                             ) {
                                 Text(
                                     text = msg.text,
-                                    fontSize = 14.sp,
+                                    fontSize = 13.sp,
                                     color = DarkObsidian,
                                     fontWeight = FontWeight.Medium
                                 )
@@ -166,32 +169,33 @@ fun AiAssistantScreen(
                         // AI Assistant Card (Left aligned, Liquid Glass)
                         LiquidGlassCard(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(22.dp),
+                            shape = RoundedCornerShape(20.dp),
                             backgroundColor = LiquidIndigo.copy(alpha = 0.16f),
                             borderColor = LiquidIndigo.copy(alpha = 0.45f)
                         ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
+                            Column(modifier = Modifier.padding(14.dp)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(
                                         imageVector = Icons.Default.AutoAwesome,
                                         contentDescription = null,
                                         tint = LiquidCyan,
-                                        modifier = Modifier.size(16.dp)
+                                        modifier = Modifier.size(15.dp)
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
                                         text = "LTM AI Assistant",
-                                        fontSize = 12.sp,
+                                        fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = LiquidCyan
+                                        color = LiquidCyan,
+                                        maxLines = 1
                                     )
                                 }
-                                Spacer(modifier = Modifier.height(8.dp))
+                                Spacer(modifier = Modifier.height(6.dp))
                                 Text(
                                     text = msg.text,
                                     fontSize = 13.sp,
                                     color = TextPrimary,
-                                    lineHeight = 20.sp
+                                    lineHeight = 19.sp
                                 )
 
                                 if (msg.actionSuggestion != null) {
@@ -199,9 +203,9 @@ fun AiAssistantScreen(
                                     Button(
                                         onClick = onNavigateToSimulation,
                                         colors = ButtonDefaults.buttonColors(containerColor = LiquidCyan),
-                                        shape = RoundedCornerShape(12.dp)
+                                        shape = RoundedCornerShape(10.dp)
                                     ) {
-                                        Text(msg.actionSuggestion, color = DarkObsidian, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                        Text(msg.actionSuggestion, color = DarkObsidian, fontWeight = FontWeight.Bold, fontSize = 12.sp, maxLines = 1)
                                     }
                                 }
                             }
@@ -215,18 +219,18 @@ fun AiAssistantScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 90.dp),
-                shape = RoundedCornerShape(26.dp)
+                shape = RoundedCornerShape(24.dp)
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 14.dp, vertical = 6.dp),
+                        .padding(horizontal = 12.dp, vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextField(
                         value = inputText,
                         onValueChange = { inputText = it },
-                        placeholder = { Text("Hỏi AI về tài chính...", color = TextTertiary, fontSize = 14.sp) },
+                        placeholder = { Text("Hỏi AI về tài chính...", color = TextTertiary, fontSize = 13.sp) },
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
                             unfocusedContainerColor = Color.Transparent,
@@ -252,16 +256,16 @@ fun AiAssistantScreen(
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(36.dp)
+                                .size(34.dp)
                                 .clip(CircleShape)
                                 .background(LiquidCyan),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Send,
+                                imageVector = Icons.AutoMirrored.Filled.Send,
                                 contentDescription = "Gửi",
                                 tint = DarkObsidian,
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(16.dp)
                             )
                         }
                     }
@@ -273,13 +277,13 @@ fun AiAssistantScreen(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
                 contentPadding = PaddingValues(bottom = 100.dp)
             ) {
                 item {
                     Text(
-                        text = "Theo dõi trạng thái: Created ➔ Accepted/Rejected ➔ Monitoring ➔ Implemented. Tích hợp Double-check đối chiếu giao dịch thực tế.",
-                        fontSize = 12.sp,
+                        text = "Theo dõi trạng thái lời khuyên & xác minh qua đối chiếu số dư thực tế.",
+                        fontSize = 11.sp,
                         color = TextSecondary
                     )
                 }
@@ -287,13 +291,13 @@ fun AiAssistantScreen(
                 items(recommendations, key = { it.id }) { rec ->
                     LiquidGlassCard(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(22.dp)
+                        shape = RoundedCornerShape(20.dp)
                     ) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                                .padding(14.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -302,13 +306,17 @@ fun AiAssistantScreen(
                             ) {
                                 Text(
                                     text = rec.title,
-                                    fontSize = 15.sp,
+                                    fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = TextPrimary
+                                    color = TextPrimary,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.weight(1f, fill = false)
                                 )
+                                Spacer(modifier = Modifier.width(6.dp))
                                 Box(
                                     modifier = Modifier
-                                        .clip(RoundedCornerShape(8.dp))
+                                        .clip(RoundedCornerShape(6.dp))
                                         .background(
                                             when (rec.status) {
                                                 RecommendationStatus.IMPLEMENTED -> LiquidEmerald.copy(alpha = 0.2f)
@@ -317,10 +325,14 @@ fun AiAssistantScreen(
                                                 else -> LiquidAmber.copy(alpha = 0.2f)
                                             }
                                         )
-                                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
                                 ) {
                                     Text(
-                                        text = rec.status.displayName,
+                                        text = when (rec.status) {
+                                            RecommendationStatus.PARTIALLY_IMPLEMENTED -> "Một phần"
+                                            RecommendationStatus.NOT_IMPLEMENTED -> "Chưa làm"
+                                            else -> rec.status.displayName
+                                        },
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = when (rec.status) {
@@ -328,38 +340,41 @@ fun AiAssistantScreen(
                                             RecommendationStatus.ACCEPTED -> LiquidCyan
                                             RecommendationStatus.REJECTED -> LiquidRose
                                             else -> LiquidAmber
-                                        }
+                                        },
+                                        maxLines = 1
                                     )
                                 }
                             }
 
                             Text(
                                 text = rec.content,
-                                fontSize = 13.sp,
+                                fontSize = 12.sp,
                                 color = TextSecondary,
-                                lineHeight = 18.sp
+                                lineHeight = 17.sp
                             )
 
                             // Double-check verification section (FR-5.7)
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clip(RoundedCornerShape(12.dp))
+                                    .clip(RoundedCornerShape(10.dp))
                                     .background(Color.White.copy(alpha = 0.05f))
-                                    .padding(10.dp)
+                                    .padding(8.dp)
                             ) {
                                 Column {
                                     Text(
-                                        text = "Xác minh thực tế (Double-check):",
-                                        fontSize = 11.sp,
+                                        text = "Xác minh (Double-check):",
+                                        fontSize = 10.sp,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = LiquidCyan
+                                        color = LiquidCyan,
+                                        maxLines = 1
                                     )
                                     Spacer(modifier = Modifier.height(2.dp))
                                     Text(
-                                        text = "${rec.verification.displayName} • ${rec.doubleCheckPrompt ?: "Hệ thống đang giám sát biến động số dư."}",
+                                        text = "${rec.verification.displayName} • ${rec.doubleCheckPrompt ?: "Hệ thống đang theo dõi."}",
                                         fontSize = 11.sp,
-                                        color = TextSecondary
+                                        color = TextSecondary,
+                                        lineHeight = 15.sp
                                     )
                                 }
                             }
@@ -374,31 +389,32 @@ fun AiAssistantScreen(
                                     TextButton(onClick = { viewModel.rejectAiRecommendation(rec.id, AdviceFeedback.HARD_TO_EXECUTE) }) {
                                         Text("Từ chối", color = LiquidRose, fontSize = 12.sp)
                                     }
-                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
                                     Button(
                                         onClick = { viewModel.applyAiBudgetRecommendation(rec) },
                                         colors = ButtonDefaults.buttonColors(containerColor = LiquidCyan),
-                                        shape = RoundedCornerShape(10.dp)
+                                        shape = RoundedCornerShape(8.dp)
                                     ) {
-                                        Text("Chấp nhận", color = DarkObsidian, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                        Text("Chấp nhận", color = DarkObsidian, fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1)
                                     }
                                 } else if (rec.status == RecommendationStatus.ACCEPTED || rec.status == RecommendationStatus.MONITORING) {
                                     TextButton(onClick = { viewModel.markRecommendationImplemented(rec.id, isPartial = true) }) {
-                                        Text("Thực hiện 1 phần", color = TextSecondary, fontSize = 12.sp)
+                                        Text("Làm 1 phần", color = TextSecondary, fontSize = 11.sp, maxLines = 1)
                                     }
-                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
                                     Button(
                                         onClick = { viewModel.markRecommendationImplemented(rec.id, isPartial = false) },
                                         colors = ButtonDefaults.buttonColors(containerColor = LiquidEmerald),
-                                        shape = RoundedCornerShape(10.dp)
+                                        shape = RoundedCornerShape(8.dp)
                                     ) {
-                                        Text("Đã hoàn thành", color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                        Text("Hoàn thành", color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1)
                                     }
                                 } else {
                                     Text(
-                                        text = "Đã ghi nhận vào Research Log",
-                                        fontSize = 11.sp,
-                                        color = TextTertiary
+                                        text = "Đã ghi nhận nghiên cứu",
+                                        fontSize = 10.sp,
+                                        color = TextTertiary,
+                                        maxLines = 1
                                     )
                                 }
                             }
@@ -409,4 +425,3 @@ fun AiAssistantScreen(
         }
     }
 }
-
