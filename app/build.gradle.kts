@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.appcompat)
     implementation(libs.google.material)
+    implementation(libs.play.services.auth)
     implementation(libs.gson)
     implementation(libs.kotlinx.coroutines.android)
 

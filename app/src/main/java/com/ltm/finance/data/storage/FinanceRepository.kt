@@ -407,6 +407,26 @@ class FinanceRepository(private val context: Context? = null) {
     // ==========================================
     // 6. HỒ SƠ, BẢO MẬT & SAO LƯU (Ltmsav features)
     // ==========================================
+    fun linkGoogleAccount(email: String, displayName: String, photoUrl: String?) {
+        _userProfile.value = _userProfile.value.copy(
+            isGoogleLinked = true,
+            googleEmail = email,
+            displayName = if (_userProfile.value.displayName == "Sinh viên" || _userProfile.value.displayName.isBlank()) displayName else _userProfile.value.displayName,
+            photoUrl = photoUrl
+        )
+        logResearchEvent("AUTH_GOOGLE_LINKED", mapOf("email" to email))
+    }
+
+    fun unlinkGoogleAccount() {
+        val currentEmail = _userProfile.value.googleEmail ?: ""
+        _userProfile.value = _userProfile.value.copy(
+            isGoogleLinked = false,
+            googleEmail = null,
+            photoUrl = null
+        )
+        logResearchEvent("AUTH_GOOGLE_UNLINKED", mapOf("email" to currentEmail))
+    }
+
     fun updateUserProfile(
         displayName: String,
         university: String,

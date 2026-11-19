@@ -296,6 +296,14 @@ class MainViewModel(
     }
 
     // Profile & Reset
+    fun linkGoogleAccount(email: String, displayName: String, photoUrl: String?) {
+        repository.linkGoogleAccount(email, displayName, photoUrl)
+    }
+
+    fun unlinkGoogleAccount() {
+        repository.unlinkGoogleAccount()
+    }
+
     fun updateUserProfile(
         displayName: String,
         university: String,

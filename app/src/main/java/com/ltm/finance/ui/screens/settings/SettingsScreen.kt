@@ -3,11 +3,15 @@ package com.ltm.finance.ui.screens.settings
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -24,6 +28,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.ltm.finance.ui.MainViewModel
 import com.ltm.finance.ui.components.LiquidGlassCard
 import com.ltm.finance.ui.theme.*
@@ -44,6 +51,38 @@ fun SettingsScreen(
     var showBackupDialog by remember { mutableStateOf(false) }
     var showImportDialog by remember { mutableStateOf(false) }
     var alertMsg by remember { mutableStateOf<String?>(null) }
+
+    val gso = remember {
+        GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestEmail()
+            .requestProfile()
+            .build()
+    }
+    val googleSignInClient = remember {
+        GoogleSignIn.getClient(context, gso)
+    }
+    val googleAuthLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            val email = account.email ?: "sinhvien@gmail.com"
+            val name = account.displayName ?: "Sinh viên Google"
+            val photo = account.photoUrl?.toString()
+            viewModel.linkGoogleAccount(email, name, photo)
+            alertMsg = "Đăng nhập Google thành công: $email"
+        } catch (e: Exception) {
+            alertMsg = "Đăng nhập Google: ${e.localizedMessage ?: "Đã hủy"}"
+        }
+    }
+
+    LaunchedEffect(alertMsg) {
+        alertMsg?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            alertMsg = null
+        }
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -71,7 +110,93 @@ fun SettingsScreen(
             }
         }
 
-        // 1. Profile Card
+        // 1. Google OAuth (FR-001)
+        item {
+            LiquidGlassCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(42.dp)
+                                .clip(CircleShape)
+                                .background(if (userProfile.isGoogleLinked) LiquidEmerald.copy(alpha = 0.2f) else GlassBase)
+                                .border(1.dp, if (userProfile.isGoogleLinked) LiquidEmerald else GlassBorderStroke, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = if (userProfile.isGoogleLinked) Icons.Default.CheckCircle else Icons.Default.AccountCircle,
+                                contentDescription = null,
+                                tint = if (userProfile.isGoogleLinked) LiquidEmerald else LiquidCyan,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = if (userProfile.isGoogleLinked) "Tài khoản Google đã liên kết" else "Đăng nhập bằng Google",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = TextPrimary
+                            )
+                            Text(
+                                text = if (userProfile.isGoogleLinked) (userProfile.googleEmail ?: "") else "Đăng nhập một chạm Google OAuth (FR-001)",
+                                fontSize = 12.sp,
+                                color = TextSecondary
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    if (userProfile.isGoogleLinked) {
+                        Button(
+                            onClick = {
+                                googleSignInClient.signOut().addOnCompleteListener {
+                                    viewModel.unlinkGoogleAccount()
+                                    alertMsg = "Đã đăng xuất tài khoản Google"
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = LiquidRose.copy(alpha = 0.2f)),
+                            modifier = Modifier.fillMaxWidth().height(40.dp),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Icon(Icons.Default.Logout, contentDescription = null, tint = LiquidRose, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Đăng xuất & Thu hồi phiên Google", color = LiquidRose, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                        }
+                    } else {
+                        Button(
+                            onClick = {
+                                try {
+                                    googleAuthLauncher.launch(googleSignInClient.signInIntent)
+                                } catch (e: Exception) {
+                                    alertMsg = "Không thể mở Google Sign-In: ${e.message}"
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = LiquidCyan),
+                            modifier = Modifier.fillMaxWidth().height(42.dp),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Icon(Icons.Default.Login, contentDescription = null, tint = DarkObsidian, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Đăng nhập với Google OAuth", color = DarkObsidian, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+        }
+
+        // 2. Profile Card
         item {
             LiquidGlassCard(
                 modifier = Modifier.fillMaxWidth(),
@@ -403,3 +528,4 @@ fun SettingsScreen(
         }
     }
 }
+
