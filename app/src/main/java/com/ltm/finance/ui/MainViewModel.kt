@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.ltm.finance.data.model.*
 import com.ltm.finance.data.storage.CloudSyncState
 import com.ltm.finance.data.storage.FinanceRepository
+import com.ltm.finance.data.update.AppUpdateManager
 import com.ltm.finance.domain.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -47,6 +48,28 @@ class MainViewModel(
     val cloudSyncState = repository.cloudSyncState
 
     fun triggerCloudSync() = repository.pushToCloud()
+
+    // In-App Auto-Update Manager
+    private val updateManager = AppUpdateManager(application.applicationContext)
+    val updateStatus = updateManager.status
+
+    fun checkForUpdates() {
+        viewModelScope.launch {
+            updateManager.checkForUpdates()
+        }
+    }
+
+    fun downloadAndInstallUpdate(url: String) {
+        viewModelScope.launch {
+            updateManager.downloadAndInstall(url)
+        }
+    }
+
+    fun dismissUpdate() {
+        updateManager.resetStatus()
+    }
+
+    fun getAppVersion(): String = updateManager.getCurrentVersionName()
 
     // Security Lock state
     private val _isUnlocked = MutableStateFlow(true)
@@ -149,7 +172,7 @@ class MainViewModel(
         ResearchSummaryMetrics("N/A", 0, 100.0, 0, 0.0, 0.0, 1)
     )
 
-    // Check PIN lock on launch
+    // Check PIN lock on launch & Auto check updates
     init {
         viewModelScope.launch {
             securityPin.collect { pin ->
@@ -159,6 +182,9 @@ class MainViewModel(
                     _isUnlocked.value = true
                 }
             }
+        }
+        viewModelScope.launch {
+            updateManager.checkForUpdates()
         }
     }
 

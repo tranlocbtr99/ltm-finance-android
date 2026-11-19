@@ -379,6 +379,46 @@ fun SettingsScreen(
             }
         }
 
+        // 5. In-App Online Auto-Update (OTA)
+        item {
+            LiquidGlassCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(18.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.SystemUpdate, contentDescription = null, tint = LiquidCyan, modifier = Modifier.size(22.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text("Cập nhật ứng dụng Online", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                            Text("Phiên bản v${viewModel.getAppVersion()} • Tự động OTA", fontSize = 11.sp, color = TextSecondary)
+                        }
+                    }
+
+                    Button(
+                        onClick = {
+                            viewModel.checkForUpdates()
+                            Toast.makeText(context, "Đang kiểm tra bản phát hành mới...", Toast.LENGTH_SHORT).show()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = LiquidCyan.copy(alpha = 0.2f)),
+                        shape = RoundedCornerShape(999.dp),
+                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
+                    ) {
+                        Text("Kiểm tra", color = LiquidCyan, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+
         // 5. Reset All Data
         item {
             LiquidGlassCard(

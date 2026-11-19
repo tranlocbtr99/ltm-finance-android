@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ltm.finance.data.model.UserRole
+import com.ltm.finance.ui.components.AppUpdateDialog
 import com.ltm.finance.ui.components.LiquidGlassBackground
 import com.ltm.finance.ui.screens.admin.AdminDashboardScreen
 import com.ltm.finance.ui.screens.ai.AiAssistantScreen
@@ -60,7 +61,15 @@ enum class NavigationTab(val label: String, val icon: ImageVector, val selectedI
 fun MainScreen(viewModel: MainViewModel) {
     val userProfile by viewModel.userProfile.collectAsState()
     val isUnlocked by viewModel.isUnlocked.collectAsState()
+    val updateStatus by viewModel.updateStatus.collectAsState()
     var appStage by remember { mutableStateOf(AppStage.SPLASH) }
+
+    // In-App Auto-Update Dialog (Appears when new release is detected or downloading)
+    AppUpdateDialog(
+        status = updateStatus,
+        onStartDownload = { url -> viewModel.downloadAndInstallUpdate(url) },
+        onDismiss = { viewModel.dismissUpdate() }
+    )
 
     when (appStage) {
         AppStage.SPLASH -> {

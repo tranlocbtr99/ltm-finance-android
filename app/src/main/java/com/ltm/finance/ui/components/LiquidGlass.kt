@@ -1,6 +1,7 @@
 package com.ltm.finance.ui.components
 
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,10 +17,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ltm.finance.R
 import com.ltm.finance.ui.theme.*
 
 @Composable
@@ -31,9 +35,9 @@ fun LiquidGlassBackground(
     val infiniteTransition = rememberInfiniteTransition(label = "ambientShimmer")
     val animOffset by infiniteTransition.animateFloat(
         initialValue = 0f,
-        targetValue = 600f,
+        targetValue = 360f,
         animationSpec = infiniteRepeatable(
-            animation = tween(12000, easing = LinearEasing),
+            animation = tween(14000, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "shimmerOffset"
@@ -44,49 +48,75 @@ fun LiquidGlassBackground(
             .fillMaxSize()
             .background(DarkObsidian)
     ) {
-        // Ambient Fluid Glow Orbs (Simulating iOS Dynamic Mesh Glass)
+        // 1. High-Resolution iOS Liquid Glass Wallpaper Image (Lush atmospheric backdrop)
+        Image(
+            painter = painterResource(id = R.drawable.bg_ios_liquid_wallpaper),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+
+        // 2. Dynamic Animated Fluid Orbs (VisionOS Refractive Aurora Glow)
+        Box(
+            modifier = Modifier
+                .size(420.dp)
+                .offset(x = (-60).dp, y = (-40 + (animOffset * 0.12f)).dp)
+                .clip(CircleShape)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            LiquidCyan.copy(alpha = 0.35f),
+                            LiquidIndigo.copy(alpha = 0.18f),
+                            Color.Transparent
+                        )
+                    )
+                )
+        )
+
         Box(
             modifier = Modifier
                 .size(380.dp)
-                .offset(x = (-80).dp, y = (-60 + (animOffset * 0.1f)).dp)
+                .align(Alignment.TopEnd)
+                .offset(x = 80.dp, y = (140 - (animOffset * 0.1f)).dp)
+                .clip(CircleShape)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            LiquidPurple.copy(alpha = 0.32f),
+                            LiquidRose.copy(alpha = 0.15f),
+                            Color.Transparent
+                        )
+                    )
+                )
+        )
+
+        Box(
+            modifier = Modifier
+                .size(460.dp)
+                .align(Alignment.BottomStart)
+                .offset(x = (-80).dp, y = 100.dp)
                 .clip(CircleShape)
                 .background(
                     Brush.radialGradient(
                         colors = listOf(
                             LiquidIndigo.copy(alpha = 0.28f),
+                            LiquidEmerald.copy(alpha = 0.12f),
                             Color.Transparent
                         )
                     )
                 )
         )
 
+        // 3. Apple Frosted Glass Atmospheric Scrim (Ensuring 100% Text Legibility)
         Box(
             modifier = Modifier
-                .size(340.dp)
-                .align(Alignment.TopEnd)
-                .offset(x = 100.dp, y = (180 - (animOffset * 0.08f)).dp)
-                .clip(CircleShape)
+                .fillMaxSize()
                 .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            LiquidCyan.copy(alpha = 0.22f),
-                            Color.Transparent
-                        )
-                    )
-                )
-        )
-
-        Box(
-            modifier = Modifier
-                .size(420.dp)
-                .align(Alignment.BottomStart)
-                .offset(x = (-100).dp, y = 140.dp)
-                .clip(CircleShape)
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            LiquidPurple.copy(alpha = 0.20f),
-                            Color.Transparent
+                    Brush.verticalGradient(
+                        listOf(
+                            Color(0xFF070B14).copy(alpha = 0.35f),
+                            Color(0xFF070B14).copy(alpha = 0.20f),
+                            Color(0xFF070B14).copy(alpha = 0.50f)
                         )
                     )
                 )
@@ -99,7 +129,7 @@ fun LiquidGlassBackground(
 @Composable
 fun LiquidGlassCard(
     modifier: Modifier = Modifier,
-    shape: Shape = RoundedCornerShape(24.dp),
+    shape: Shape = RoundedCornerShape(22.dp),
     backgroundColor: Color = GlassBase,
     borderColor: Color = GlassBorderStroke,
     onClick: (() -> Unit)? = null,
@@ -113,8 +143,8 @@ fun LiquidGlassCard(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        backgroundColor,
-                        backgroundColor.copy(alpha = 0.45f)
+                        backgroundColor.copy(alpha = 0.52f),
+                        Color(0xFF0F172A).copy(alpha = 0.72f)
                     )
                 )
             )
@@ -123,13 +153,29 @@ fun LiquidGlassCard(
                 brush = Brush.verticalGradient(
                     colors = listOf(
                         GlassBorderTopHighlight,
-                        borderColor.copy(alpha = 0.12f)
+                        borderColor.copy(alpha = 0.08f)
                     )
                 ),
                 shape = shape
             )
             .then(clickModifier)
     ) {
+        // Subtle top specular highlight reflection (Apple visionOS material)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(
+                    Brush.horizontalGradient(
+                        listOf(
+                            Color.Transparent,
+                            Color.White.copy(alpha = 0.22f),
+                            Color.Transparent
+                        )
+                    )
+                )
+        )
+
         content()
     }
 }
@@ -251,4 +297,3 @@ fun LiquidSegmentedControl(
         }
     }
 }
-
