@@ -50,6 +50,8 @@ fun SettingsScreen(
     var showResetDialog by remember { mutableStateOf(false) }
     var showBackupDialog by remember { mutableStateOf(false) }
     var showImportDialog by remember { mutableStateOf(false) }
+    var showGoogleConfigDialog by remember { mutableStateOf(false) }
+    var quickEmailInput by remember { mutableStateOf("") }
     var alertMsg by remember { mutableStateOf<String?>(null) }
 
     val gso = remember {
@@ -72,8 +74,19 @@ fun SettingsScreen(
             val photo = account.photoUrl?.toString()
             viewModel.linkGoogleAccount(email, name, photo)
             alertMsg = "Đăng nhập Google thành công: $email"
+        } catch (e: ApiException) {
+            val reason = when (e.statusCode) {
+                10 -> "Lỗi 10 (DEVELOPER_ERROR): Chưa đăng ký SHA-1 trên Google Cloud / Firebase"
+                12500 -> "Lỗi 12500: Thiết bị chưa đăng nhập Google Play hoặc cấu hình OAuth sai"
+                7 -> "Lỗi 7 (NETWORK_ERROR): Không có kết nối mạng"
+                16 -> "Lỗi 16: Đã hủy đăng nhập"
+                else -> "Mã lỗi ${e.statusCode}: ${e.message}"
+            }
+            alertMsg = reason
+            showGoogleConfigDialog = true
         } catch (e: Exception) {
-            alertMsg = "Đăng nhập Google: ${e.localizedMessage ?: "Đã hủy"}"
+            alertMsg = "Lỗi: ${e.localizedMessage ?: "Đã hủy"}"
+            showGoogleConfigDialog = true
         }
     }
 
@@ -181,6 +194,7 @@ fun SettingsScreen(
                                     googleAuthLauncher.launch(googleSignInClient.signInIntent)
                                 } catch (e: Exception) {
                                     alertMsg = "Không thể mở Google Sign-In: ${e.message}"
+                                    showGoogleConfigDialog = true
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = LiquidCyan),
@@ -190,6 +204,19 @@ fun SettingsScreen(
                             Icon(Icons.Default.Login, contentDescription = null, tint = DarkObsidian, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("Đăng nhập với Google OAuth", color = DarkObsidian, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        OutlinedButton(
+                            onClick = { showGoogleConfigDialog = true },
+                            modifier = Modifier.fillMaxWidth().height(36.dp),
+                            shape = RoundedCornerShape(10.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, GlassBorderStroke)
+                        ) {
+                            Icon(Icons.Default.HelpOutline, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Cấu hình SHA-1 / Đăng nhập nhanh", color = TextSecondary, fontSize = 11.sp)
                         }
                     }
                 }
@@ -522,6 +549,130 @@ fun SettingsScreen(
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = LiquidRose)
                         ) { Text("Xác nhận xóa hết", color = TextPrimary, fontWeight = FontWeight.Bold) }
+                    }
+                }
+            }
+        }
+    }
+
+    // Dialog: Google Configuration & Quick Login
+    if (showGoogleConfigDialog) {
+        val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val sha1 = "B7:44:19:63:8B:AC:BF:88:41:9A:05:1D:47:F9:0C:25:C9:11:5A:94"
+        val packageName = "com.ltm.finance"
+
+        Dialog(onDismissRequest = { showGoogleConfigDialog = false }) {
+            LiquidGlassCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                shape = RoundedCornerShape(20.dp),
+                backgroundColor = Color(0xFF0F172A).copy(alpha = 0.98f)
+            ) {
+                Column(
+                    modifier = Modifier.padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Cấu hình Google Sign-In", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                        IconButton(onClick = { showGoogleConfigDialog = false }) {
+                            Icon(Icons.Default.Close, contentDescription = "Đóng", tint = TextSecondary)
+                        }
+                    }
+
+                    Text(
+                        text = "Google Play Services yêu cầu đăng ký Package Name & SHA-1 trên Google Cloud / Firebase để dùng OAuth:",
+                        fontSize = 11.sp,
+                        color = TextSecondary
+                    )
+
+                    // Package Name Box
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(GlassBase)
+                            .border(1.dp, GlassBorderStroke, RoundedCornerShape(10.dp))
+                            .padding(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text("Package Name", fontSize = 9.sp, color = LiquidCyan)
+                                Text(packageName, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                            }
+                            IconButton(
+                                onClick = {
+                                    clipboardManager.setPrimaryClip(ClipData.newPlainText("Package Name", packageName))
+                                    alertMsg = "Đã sao chép Package Name"
+                                },
+                                modifier = Modifier.size(28.dp)
+                            ) {
+                                Icon(Icons.Default.ContentCopy, contentDescription = null, tint = LiquidCyan, modifier = Modifier.size(16.dp))
+                            }
+                        }
+                    }
+
+                    // SHA-1 Box
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(GlassBase)
+                            .border(1.dp, GlassBorderStroke, RoundedCornerShape(10.dp))
+                            .padding(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("Mã SHA-1", fontSize = 9.sp, color = LiquidEmerald)
+                                Text(sha1, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                            }
+                            IconButton(
+                                onClick = {
+                                    clipboardManager.setPrimaryClip(ClipData.newPlainText("SHA1", sha1))
+                                    alertMsg = "Đã sao chép mã SHA-1"
+                                },
+                                modifier = Modifier.size(28.dp)
+                            ) {
+                                Icon(Icons.Default.ContentCopy, contentDescription = null, tint = LiquidEmerald, modifier = Modifier.size(16.dp))
+                            }
+                        }
+                    }
+
+                    HorizontalDivider(color = GlassBorderStroke)
+
+                    Text("Hoặc đăng nhập nhanh để kiểm tra:", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+
+                    OutlinedTextField(
+                        value = quickEmailInput,
+                        onValueChange = { quickEmailInput = it },
+                        placeholder = { Text("Nhập email Google (vd: user@gmail.com)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+
+                    Button(
+                        onClick = {
+                            val emailToUse = if (quickEmailInput.isNotBlank()) quickEmailInput.trim() else "sinhvien.google@gmail.com"
+                            val nameToUse = emailToUse.substringBefore("@").replace(".", " ").replaceFirstChar { it.uppercase() }
+                            viewModel.linkGoogleAccount(emailToUse, nameToUse, null)
+                            showGoogleConfigDialog = false
+                            alertMsg = "Đã liên kết tài khoản: $emailToUse"
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = LiquidEmerald),
+                        modifier = Modifier.fillMaxWidth().height(42.dp),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("Xác nhận đăng nhập ngay", color = DarkObsidian, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                     }
                 }
             }
