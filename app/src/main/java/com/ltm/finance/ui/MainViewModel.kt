@@ -302,7 +302,19 @@ class MainViewModel(
         repository.updateConsent(terms, ai, research)
     }
 
-    // Profile & Reset
+    // Profile, Auth & Reset
+    fun loginAsUser(email: String, displayName: String, photoUrl: String?) {
+        repository.loginAsUser(email, displayName, photoUrl)
+    }
+
+    fun loginAsAdmin(adminCode: String): Boolean {
+        return repository.loginAsAdmin(adminCode)
+    }
+
+    fun signOut() {
+        repository.signOut()
+    }
+
     fun linkGoogleAccount(email: String, displayName: String, photoUrl: String?) {
         repository.linkGoogleAccount(email, displayName, photoUrl)
     }

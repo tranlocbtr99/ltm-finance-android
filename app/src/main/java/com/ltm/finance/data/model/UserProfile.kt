@@ -2,6 +2,11 @@ package com.ltm.finance.data.model
 
 import java.math.BigDecimal
 
+enum class UserRole {
+    USER,
+    ADMIN
+}
+
 data class UserProfile(
     val id: String = "USR-2026-001",
     val email: String = "sinhvien@university.edu.vn",
@@ -16,6 +21,9 @@ data class UserProfile(
     val isGoogleLinked: Boolean = false,
     val googleEmail: String? = null,
     val photoUrl: String? = null,
+    val role: UserRole = UserRole.USER,
+    val isAuthenticated: Boolean = false,
+    val hasAcceptedTerms: Boolean = false,
     val consentTerms: Boolean = true,
     val consentAiProcessing: Boolean = true,
     val consentResearchStudy: Boolean = true,

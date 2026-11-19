@@ -122,18 +122,28 @@ class FinanceRepository(private val context: Context? = null) {
         )
         logResearchEvent("APP_INITIALIZED", mapOf("mode" to "CLEAN_START"))
 
+        val isAuth = prefs?.getBoolean("is_authenticated", false) ?: false
+        val savedRoleStr = prefs?.getString("user_role", UserRole.USER.name) ?: UserRole.USER.name
+        val savedRole = try { UserRole.valueOf(savedRoleStr) } catch (e: Exception) { UserRole.USER }
+        val hasAccepted = prefs?.getBoolean("has_accepted_terms", false) ?: false
         val savedEmail = prefs?.getString("google_email", null)
-        val isLinked = prefs?.getBoolean("is_google_linked", false) ?: false
-        if (isLinked && !savedEmail.isNullOrBlank()) {
-            val savedName = prefs?.getString("display_name", "Sinh viên") ?: "Sinh viên"
+
+        if (isAuth) {
+            val savedName = prefs?.getString("display_name", if (savedRole == UserRole.ADMIN) "Quản trị viên" else "Sinh viên") ?: "Sinh viên"
             val savedPhoto = prefs?.getString("photo_url", null)
+            val isLinked = prefs?.getBoolean("is_google_linked", false) ?: false
             _userProfile.value = _userProfile.value.copy(
-                isGoogleLinked = true,
+                role = savedRole,
+                isAuthenticated = true,
+                hasAcceptedTerms = hasAccepted,
+                isGoogleLinked = isLinked,
                 googleEmail = savedEmail,
                 displayName = savedName,
                 photoUrl = savedPhoto
             )
-            setupCloudSync(savedEmail)
+            if (isLinked && !savedEmail.isNullOrBlank()) {
+                setupCloudSync(savedEmail)
+            }
         }
     }
 
@@ -459,25 +469,53 @@ class FinanceRepository(private val context: Context? = null) {
     // ==========================================
     // 6. HỒ SƠ, BẢO MẬT & SAO LƯU (Ltmsav features)
     // ==========================================
-    fun linkGoogleAccount(email: String, displayName: String, photoUrl: String?) {
+    fun loginAsUser(email: String, displayName: String, photoUrl: String?) {
+        val finalName = if (displayName.isBlank() || displayName == "Sinh viên") "Sinh viên" else displayName
         _userProfile.value = _userProfile.value.copy(
             isGoogleLinked = true,
             googleEmail = email,
-            displayName = if (_userProfile.value.displayName == "Sinh viên" || _userProfile.value.displayName.isBlank()) displayName else _userProfile.value.displayName,
-            photoUrl = photoUrl
+            displayName = finalName,
+            photoUrl = photoUrl,
+            role = UserRole.USER,
+            isAuthenticated = true,
+            hasAcceptedTerms = true
         )
         prefs?.edit()?.apply {
             putString("google_email", email)
-            putString("display_name", displayName)
+            putString("display_name", finalName)
             putString("photo_url", photoUrl)
             putBoolean("is_google_linked", true)
+            putString("user_role", UserRole.USER.name)
+            putBoolean("is_authenticated", true)
+            putBoolean("has_accepted_terms", true)
             apply()
         }
-        logResearchEvent("AUTH_GOOGLE_LINKED", mapOf("email" to email))
+        logResearchEvent("AUTH_USER_LOGIN", mapOf("email" to email))
         setupCloudSync(email)
     }
 
-    fun unlinkGoogleAccount() {
+    fun loginAsAdmin(adminCode: String): Boolean {
+        if (adminCode.trim() == "8888" || adminCode.trim() == "admin123") {
+            _userProfile.value = _userProfile.value.copy(
+                role = UserRole.ADMIN,
+                isAuthenticated = true,
+                hasAcceptedTerms = true,
+                displayName = "Quản trị viên Super Admin",
+                email = "admin@ltmfinance.edu.vn"
+            )
+            prefs?.edit()?.apply {
+                putString("user_role", UserRole.ADMIN.name)
+                putBoolean("is_authenticated", true)
+                putBoolean("has_accepted_terms", true)
+                apply()
+            }
+            logResearchEvent("AUTH_ADMIN_LOGIN", mapOf("role" to "SUPER_ADMIN"))
+            return true
+        }
+        return false
+    }
+
+    fun signOut() {
         val currentEmail = _userProfile.value.googleEmail ?: ""
         cloudListener?.remove()
         cloudListener = null
@@ -486,18 +524,30 @@ class FinanceRepository(private val context: Context? = null) {
             remove("display_name")
             remove("photo_url")
             putBoolean("is_google_linked", false)
+            putBoolean("is_authenticated", false)
+            putString("user_role", UserRole.USER.name)
             apply()
         }
         _userProfile.value = _userProfile.value.copy(
             isGoogleLinked = false,
             googleEmail = null,
-            photoUrl = null
+            photoUrl = null,
+            isAuthenticated = false,
+            role = UserRole.USER
         )
         _cloudSyncState.value = CloudSyncState(
             status = CloudSyncStatus.OFFLINE,
             message = "Chưa kết nối đám mây"
         )
-        logResearchEvent("AUTH_GOOGLE_UNLINKED", mapOf("email" to currentEmail))
+        logResearchEvent("AUTH_SIGNOUT", mapOf("email" to currentEmail))
+    }
+
+    fun linkGoogleAccount(email: String, displayName: String, photoUrl: String?) {
+        loginAsUser(email, displayName, photoUrl)
+    }
+
+    fun unlinkGoogleAccount() {
+        signOut()
     }
 
     fun setupCloudSync(email: String) {

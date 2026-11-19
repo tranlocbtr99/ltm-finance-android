@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -39,7 +40,7 @@ import java.math.BigDecimal
 @Composable
 fun SettingsScreen(
     viewModel: MainViewModel,
-    onOpenAdminPortal: () -> Unit
+    onSignOut: () -> Unit
 ) {
     val userProfile by viewModel.userProfile.collectAsState()
     val securityPin by viewModel.securityPin.collectAsState()
@@ -346,31 +347,34 @@ fun SettingsScreen(
             }
         }
 
-        // 4. Admin Portal (Cổng quản trị tự động tổng hợp dữ liệu)
+        // 4. Sign Out Card
         item {
             LiquidGlassCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(18.dp),
-                backgroundColor = LiquidPurple.copy(alpha = 0.15f),
-                borderColor = LiquidPurple.copy(alpha = 0.45f)
+                backgroundColor = LiquidRose.copy(alpha = 0.12f),
+                borderColor = LiquidRose.copy(alpha = 0.35f)
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onOpenAdminPortal() }
+                        .clickable {
+                            viewModel.signOut()
+                            onSignOut()
+                        }
                         .padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.AdminPanelSettings, contentDescription = null, tint = LiquidPurple, modifier = Modifier.size(22.dp))
-                        Spacer(modifier = Modifier.width(10.dp))
+                        Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, tint = LiquidRose, modifier = Modifier.size(22.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
                         Column {
-                            Text("Cổng Quản Trị & Nghiên Cứu", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                            Text("Tự động nhận dữ liệu ẩn danh và tổng hợp riêng", fontSize = 11.sp, color = TextSecondary)
+                            Text("Đăng xuất tài khoản", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = LiquidRose)
+                            Text("Thu hồi phiên làm việc và quay về màn hình bắt đầu", fontSize = 11.sp, color = TextSecondary)
                         }
                     }
-                    Icon(Icons.Default.ChevronRight, contentDescription = null, tint = LiquidPurple)
+                    Icon(Icons.Default.ChevronRight, contentDescription = null, tint = LiquidRose)
                 }
             }
         }

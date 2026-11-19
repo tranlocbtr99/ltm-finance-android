@@ -24,19 +24,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ltm.finance.data.model.UserRole
 import com.ltm.finance.ui.components.LiquidGlassBackground
+import com.ltm.finance.ui.screens.admin.AdminDashboardScreen
 import com.ltm.finance.ui.screens.ai.AiAssistantScreen
 import com.ltm.finance.ui.screens.assets_debts.AccountsDebtsScreen
 import com.ltm.finance.ui.screens.budgets.BudgetsScreen
 import com.ltm.finance.ui.screens.forecast_simulation.ForecastSimulationScreen
 import com.ltm.finance.ui.screens.overview.OverviewScreen
 import com.ltm.finance.ui.screens.reports.ReportsScreen
-import com.ltm.finance.ui.screens.research.ResearchCenterScreen
 import com.ltm.finance.ui.screens.settings.SecurityLockScreen
 import com.ltm.finance.ui.screens.settings.SettingsScreen
+import com.ltm.finance.ui.screens.splash.SplashScreen
 import com.ltm.finance.ui.screens.transactions.AddTransactionDialog
 import com.ltm.finance.ui.screens.transactions.TransactionsScreen
+import com.ltm.finance.ui.screens.welcome.WelcomeAuthScreen
 import com.ltm.finance.ui.theme.*
+
+enum class AppStage {
+    SPLASH,
+    AUTH,
+    MAIN,
+    ADMIN
+}
 
 enum class NavigationTab(val label: String, val icon: ImageVector, val selectedIcon: ImageVector) {
     OVERVIEW("Tổng quan", Icons.Outlined.Home, Icons.Filled.Home),
@@ -48,162 +58,184 @@ enum class NavigationTab(val label: String, val icon: ImageVector, val selectedI
 
 @Composable
 fun MainScreen(viewModel: MainViewModel) {
+    val userProfile by viewModel.userProfile.collectAsState()
     val isUnlocked by viewModel.isUnlocked.collectAsState()
+    var appStage by remember { mutableStateOf(AppStage.SPLASH) }
 
-    // If PIN lock is active, block UI until unlocked
-    if (!isUnlocked) {
-        SecurityLockScreen(onVerifyPin = { enteredPin ->
-            viewModel.verifyPin(enteredPin)
-        })
-        return
-    }
-
-    var currentTab by remember { mutableStateOf(NavigationTab.OVERVIEW) }
-    var showForecastSimulation by remember { mutableStateOf(false) }
-    var showReportsScreen by remember { mutableStateOf(false) }
-    var showSettingsScreen by remember { mutableStateOf(false) }
-    var showAdminPortal by remember { mutableStateOf(false) }
-    var showAddTransactionDialog by remember { mutableStateOf(false) }
-
-    val accounts by viewModel.accounts.collectAsState()
-
-    LiquidGlassBackground {
-        Scaffold(
-            containerColor = Color.Transparent,
-            bottomBar = {
-                LiquidGlassBottomBar(
-                    currentTab = currentTab,
-                    onTabSelected = {
-                        showForecastSimulation = false
-                        showReportsScreen = false
-                        showSettingsScreen = false
-                        showAdminPortal = false
-                        currentTab = it
+    when (appStage) {
+        AppStage.SPLASH -> {
+            SplashScreen(
+                onFinishLoading = {
+                    if (!userProfile.isAuthenticated) {
+                        appStage = AppStage.AUTH
+                    } else if (userProfile.role == UserRole.ADMIN) {
+                        appStage = AppStage.ADMIN
+                    } else {
+                        appStage = AppStage.MAIN
                     }
-                )
-            }
-        ) { paddingValues ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                when {
-                    showReportsScreen -> {
-                        Column(modifier = Modifier.fillMaxSize()) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                IconButton(onClick = { showReportsScreen = false }) {
-                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại", tint = TextPrimary)
-                                }
-                                Text("Quay lại", fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
-                            }
-                            ReportsScreen(viewModel = viewModel)
-                        }
-                    }
-
-                    showSettingsScreen -> {
-                        Column(modifier = Modifier.fillMaxSize()) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                IconButton(onClick = { showSettingsScreen = false }) {
-                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại", tint = TextPrimary)
-                                }
-                                Text("Quay lại", fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
-                            }
-                            SettingsScreen(
-                                viewModel = viewModel,
-                                onOpenAdminPortal = {
-                                    showSettingsScreen = false
-                                    showAdminPortal = true
-                                }
-                            )
-                        }
-                    }
-
-                    showAdminPortal -> {
-                        Column(modifier = Modifier.fillMaxSize()) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                IconButton(onClick = { showAdminPortal = false }) {
-                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại", tint = TextPrimary)
-                                }
-                                Text("Cổng Quản Trị Hệ Thống", fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Bold)
-                            }
-                            ResearchCenterScreen(viewModel = viewModel)
-                        }
-                    }
-
-                    showForecastSimulation -> {
-                        Column(modifier = Modifier.fillMaxSize()) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                IconButton(onClick = { showForecastSimulation = false }) {
-                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại", tint = TextPrimary)
-                                }
-                                Text("Quay lại", fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
-                            }
-                            ForecastSimulationScreen(viewModel = viewModel)
-                        }
-                    }
-
-                    else -> {
-                        when (currentTab) {
-                            NavigationTab.OVERVIEW -> OverviewScreen(
-                                viewModel = viewModel,
-                                onNavigateToTransactions = { currentTab = NavigationTab.TRANSACTIONS },
-                                onNavigateToAi = { currentTab = NavigationTab.AI },
-                                onNavigateToForecast = { showForecastSimulation = true },
-                                onNavigateToSimulation = { showForecastSimulation = true },
-                                onNavigateToReports = { showReportsScreen = true },
-                                onNavigateToSettings = { showSettingsScreen = true },
-                                onOpenAddTransaction = { showAddTransactionDialog = true }
-                            )
-                            NavigationTab.TRANSACTIONS -> TransactionsScreen(
-                                viewModel = viewModel,
-                                onOpenAddTransaction = { showAddTransactionDialog = true }
-                            )
-                            NavigationTab.BUDGETS -> BudgetsScreen(
-                                viewModel = viewModel
-                            )
-                            NavigationTab.ACCOUNTS -> AccountsDebtsScreen(
-                                viewModel = viewModel
-                            )
-                            NavigationTab.AI -> AiAssistantScreen(
-                                viewModel = viewModel,
-                                onNavigateToSimulation = { showForecastSimulation = true }
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        // Add Transaction Dialog
-        if (showAddTransactionDialog) {
-            AddTransactionDialog(
-                accounts = accounts,
-                onDismiss = { showAddTransactionDialog = false },
-                onSave = { type, amount, date, accountId, targetAccountId, category, note ->
-                    viewModel.addTransaction(type, amount, date, accountId, targetAccountId, category, note)
                 }
             )
+        }
+
+        AppStage.AUTH -> {
+            WelcomeAuthScreen(
+                viewModel = viewModel,
+                onLoginSuccess = {
+                    appStage = AppStage.MAIN
+                },
+                onAdminLoginSuccess = {
+                    appStage = AppStage.ADMIN
+                }
+            )
+        }
+
+        AppStage.ADMIN -> {
+            AdminDashboardScreen(
+                viewModel = viewModel,
+                onAdminSignOut = {
+                    appStage = AppStage.AUTH
+                }
+            )
+        }
+
+        AppStage.MAIN -> {
+            // If PIN lock is active, block UI until unlocked
+            if (!isUnlocked) {
+                SecurityLockScreen(onVerifyPin = { enteredPin ->
+                    viewModel.verifyPin(enteredPin)
+                })
+                return
+            }
+
+            var currentTab by remember { mutableStateOf(NavigationTab.OVERVIEW) }
+            var showForecastSimulation by remember { mutableStateOf(false) }
+            var showReportsScreen by remember { mutableStateOf(false) }
+            var showSettingsScreen by remember { mutableStateOf(false) }
+            var showAddTransactionDialog by remember { mutableStateOf(false) }
+
+            val accounts by viewModel.accounts.collectAsState()
+
+            LiquidGlassBackground {
+                Scaffold(
+                    containerColor = Color.Transparent,
+                    bottomBar = {
+                        LiquidGlassBottomBar(
+                            currentTab = currentTab,
+                            onTabSelected = {
+                                showForecastSimulation = false
+                                showReportsScreen = false
+                                showSettingsScreen = false
+                                currentTab = it
+                            }
+                        )
+                    }
+                ) { paddingValues ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                    ) {
+                        when {
+                            showReportsScreen -> {
+                                Column(modifier = Modifier.fillMaxSize()) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        IconButton(onClick = { showReportsScreen = false }) {
+                                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại", tint = TextPrimary)
+                                        }
+                                        Text("Quay lại", fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
+                                    }
+                                    ReportsScreen(viewModel = viewModel)
+                                }
+                            }
+
+                            showSettingsScreen -> {
+                                Column(modifier = Modifier.fillMaxSize()) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        IconButton(onClick = { showSettingsScreen = false }) {
+                                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại", tint = TextPrimary)
+                                        }
+                                        Text("Quay lại", fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
+                                    }
+                                    SettingsScreen(
+                                        viewModel = viewModel,
+                                        onSignOut = {
+                                            showSettingsScreen = false
+                                            appStage = AppStage.AUTH
+                                        }
+                                    )
+                                }
+                            }
+
+                            showForecastSimulation -> {
+                                Column(modifier = Modifier.fillMaxSize()) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        IconButton(onClick = { showForecastSimulation = false }) {
+                                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại", tint = TextPrimary)
+                                        }
+                                        Text("Quay lại", fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
+                                    }
+                                    ForecastSimulationScreen(viewModel = viewModel)
+                                }
+                            }
+
+                            else -> {
+                                when (currentTab) {
+                                    NavigationTab.OVERVIEW -> OverviewScreen(
+                                        viewModel = viewModel,
+                                        onNavigateToTransactions = { currentTab = NavigationTab.TRANSACTIONS },
+                                        onNavigateToAi = { currentTab = NavigationTab.AI },
+                                        onNavigateToForecast = { showForecastSimulation = true },
+                                        onNavigateToSimulation = { showForecastSimulation = true },
+                                        onNavigateToReports = { showReportsScreen = true },
+                                        onNavigateToSettings = { showSettingsScreen = true },
+                                        onOpenAddTransaction = { showAddTransactionDialog = true }
+                                    )
+                                    NavigationTab.TRANSACTIONS -> TransactionsScreen(
+                                        viewModel = viewModel,
+                                        onOpenAddTransaction = { showAddTransactionDialog = true }
+                                    )
+                                    NavigationTab.BUDGETS -> BudgetsScreen(
+                                        viewModel = viewModel
+                                    )
+                                    NavigationTab.ACCOUNTS -> AccountsDebtsScreen(
+                                        viewModel = viewModel
+                                    )
+                                    NavigationTab.AI -> AiAssistantScreen(
+                                        viewModel = viewModel,
+                                        onNavigateToSimulation = { showForecastSimulation = true }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Add Transaction Dialog
+                if (showAddTransactionDialog) {
+                    AddTransactionDialog(
+                        accounts = accounts,
+                        onDismiss = { showAddTransactionDialog = false },
+                        onSave = { type, amount, date, accountId, targetAccountId, category, note ->
+                            viewModel.addTransaction(type, amount, date, accountId, targetAccountId, category, note)
+                        }
+                    )
+                }
+            }
         }
     }
 }
