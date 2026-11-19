@@ -1,6 +1,8 @@
 package com.ltm.finance.data.storage
 
 import android.content.Context
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.ltm.finance.data.model.*
 import com.ltm.finance.domain.AiFinanceAssistant
 import com.ltm.finance.domain.FinanceEngine
@@ -14,11 +16,38 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 
+data class BackupDataWrapper(
+    val userProfile: UserProfile,
+    val accounts: List<FinancialAccount>,
+    val transactions: List<Transaction>,
+    val debts: List<Debt>,
+    val budgets: List<Budget>,
+    val pinCode: String? = null
+)
+
 class FinanceRepository(private val context: Context? = null) {
 
-    private val _userProfile = MutableStateFlow(UserProfile())
+    private val _userProfile = MutableStateFlow(
+        UserProfile(
+            id = "USR-${UUID.randomUUID().toString().take(6)}",
+            email = "sinhvien@university.edu.vn",
+            displayName = "Sinh viên",
+            university = "Đại học",
+            academicYear = 1,
+            monthlyAllowance = BigDecimal.ZERO,
+            partTimeIncome = BigDecimal.ZERO,
+            expectedLivingCost = BigDecimal.ZERO,
+            financialGoal = "Quản lý chi tiêu hiệu quả",
+            incomeDayOfMonth = 1,
+            consentTerms = true,
+            consentAiProcessing = true,
+            consentResearchStudy = true,
+            researchParticipantId = "PARTICIPANT-${(1000..9999).random()}"
+        )
+    )
     val userProfile: StateFlow<UserProfile> = _userProfile.asStateFlow()
 
+    // Clean initial state (NO mock/demo data)
     private val _accounts = MutableStateFlow<List<FinancialAccount>>(emptyList())
     val accounts: StateFlow<List<FinancialAccount>> = _accounts.asStateFlow()
 
@@ -40,234 +69,25 @@ class FinanceRepository(private val context: Context? = null) {
     private val _researchEvents = MutableStateFlow<List<ResearchEvent>>(emptyList())
     val researchEvents: StateFlow<List<ResearchEvent>> = _researchEvents.asStateFlow()
 
+    private val _securityPin = MutableStateFlow<String?>(null)
+    val securityPin: StateFlow<String?> = _securityPin.asStateFlow()
+
+    private val gson = Gson()
+
     init {
-        loadInitialData()
-    }
-
-    private fun loadInitialData() {
-        val today = LocalDate.now()
-        val currentMonth = today.format(DateTimeFormatter.ofPattern("yyyy-MM"))
-        val dateStr = today.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-
-        // 1. Initial Accounts (FR-008, FR-009)
-        val initialAccounts = listOf(
-            FinancialAccount(
-                id = "ACC-01",
-                name = "Ví MoMo sinh viên",
-                type = AccountType.E_WALLET,
-                balance = BigDecimal("850000"),
-                provider = "MoMo",
-                isLiquid = true
-            ),
-            FinancialAccount(
-                id = "ACC-02",
-                name = "Vietcombank Digital",
-                type = AccountType.BANK,
-                balance = BigDecimal("3450000"),
-                provider = "Vietcombank",
-                isLiquid = true
-            ),
-            FinancialAccount(
-                id = "ACC-03",
-                name = "Tiền mặt trong ví",
-                type = AccountType.CASH,
-                balance = BigDecimal("420000"),
-                provider = "Tiền mặt",
-                isLiquid = true
-            ),
-            FinancialAccount(
-                id = "ACC-04",
-                name = "Sổ tiết kiệm dự phòng (6 tháng)",
-                type = AccountType.SAVINGS,
-                balance = BigDecimal("5000000"),
-                provider = "BIDV",
-                isLiquid = false, // Tiền gửi có kỳ hạn khóa lại (FR-010)
-                interestRateYearly = 5.3,
-                maturityDate = today.plusMonths(4).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
-                termMonths = 6
-            )
-        )
-
-        // 2. Initial Debts (FR-011, FR-012, FR-013)
-        val initialDebts = listOf(
-            Debt(
-                id = "DEBT-01",
-                name = "Trả góp điện thoại",
-                type = DebtType.INSTALLMENT,
-                initialAmount = BigDecimal("6000000"),
-                currentBalance = BigDecimal("2000000"),
-                interestRateYearly = 0.0,
-                paymentDueDay = 25,
-                monthlyPaymentEstimate = BigDecimal("1000000"),
-                startDate = "2026-08-25",
-                endDate = "2027-02-25",
-                schedules = listOf(
-                    RepaymentSchedule(
-                        id = "SCH-01",
-                        debtId = "DEBT-01",
-                        dueDate = today.plusDays(6).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
-                        principal = BigDecimal("1000000"),
-                        interest = BigDecimal.ZERO,
-                        status = RepaymentStatus.UPCOMING
-                    )
-                )
-            ),
-            Debt(
-                id = "DEBT-02",
-                name = "Thẻ tín dụng sinh viên Shinhan",
-                type = DebtType.CREDIT_CARD,
-                initialAmount = BigDecimal("5000000"),
-                currentBalance = BigDecimal("750000"),
-                interestRateYearly = 18.0,
-                creditLimit = BigDecimal("5000000"),
-                statementDay = 20,
-                paymentDueDay = 5,
-                monthlyPaymentEstimate = BigDecimal("750000"),
-                startDate = "2026-01-01",
-                endDate = "2027-01-01"
-            )
-        )
-
-        // 3. Initial Transactions (FR-003, FR-004)
-        val initialTransactions = listOf(
-            Transaction(
-                id = "TX-01",
-                type = TransactionType.INCOME,
-                amount = BigDecimal("3500000"),
-                date = today.withDayOfMonth(5).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
-                accountId = "ACC-02",
-                category = "Trợ cấp gia đình",
-                note = "Bố mẹ gửi tiền sinh hoạt tháng $currentMonth"
-            ),
-            Transaction(
-                id = "TX-02",
-                type = TransactionType.INCOME,
-                amount = BigDecimal("1800000"),
-                date = today.withDayOfMonth(10).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
-                accountId = "ACC-02",
-                category = "Lương làm thêm",
-                note = "Lương gia sư tuần 1-2"
-            ),
-            Transaction(
-                id = "TX-03",
-                type = TransactionType.EXPENSE,
-                amount = BigDecimal("1800000"),
-                date = today.withDayOfMonth(6).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
-                accountId = "ACC-02",
-                category = "Nhà ở",
-                note = "Tiền phòng trọ và điện nước tháng này"
-            ),
-            Transaction(
-                id = "TX-04",
-                type = TransactionType.EXPENSE,
-                amount = BigDecimal("1450000"),
-                date = today.minusDays(2).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
-                accountId = "ACC-01",
-                category = "Ăn uống",
-                note = "Cơm trưa, đi chợ cả tuần và cafe"
-            ),
-            Transaction(
-                id = "TX-05",
-                type = TransactionType.EXPENSE,
-                amount = BigDecimal("320000"),
-                date = today.minusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
-                accountId = "ACC-03",
-                category = "Đi lại",
-                note = "Đổ xăng xe máy và vé xe bus tháng"
-            ),
-            Transaction(
-                id = "TX-06",
-                type = TransactionType.EXPENSE,
-                amount = BigDecimal("450000"),
-                date = dateStr,
-                accountId = "ACC-01",
-                category = "Học tập",
-                note = "Mua giáo trình chuyên ngành và photo tài liệu"
-            )
-        )
-
-        // 4. Initial Budgets (FR-014, FR-015, FR-016)
-        val initialBudgets = listOf(
-            Budget(
-                id = "BG-01",
-                category = "Ăn uống",
-                originalAmount = BigDecimal("2000000"),
-                currentAmount = BigDecimal("2000000"),
-                spentAmount = BigDecimal("1450000"),
-                monthYear = currentMonth,
-                warningThresholdPercent = 80
-            ),
-            Budget(
-                id = "BG-02",
-                category = "Nhà ở",
-                originalAmount = BigDecimal("1800000"),
-                currentAmount = BigDecimal("1800000"),
-                spentAmount = BigDecimal("1800000"),
-                monthYear = currentMonth,
-                warningThresholdPercent = 80
-            ),
-            Budget(
-                id = "BG-03",
-                category = "Đi lại",
-                originalAmount = BigDecimal("500000"),
-                currentAmount = BigDecimal("500000"),
-                spentAmount = BigDecimal("320000"),
-                monthYear = currentMonth,
-                warningThresholdPercent = 80
-            ),
-            Budget(
-                id = "BG-04",
-                category = "Học tập",
-                originalAmount = BigDecimal("600000"),
-                currentAmount = BigDecimal("600000"),
-                spentAmount = BigDecimal("450000"),
-                monthYear = currentMonth,
-                warningThresholdPercent = 80
-            ),
-            Budget(
-                id = "BG-05",
-                category = "Giải trí",
-                originalAmount = BigDecimal("400000"),
-                currentAmount = BigDecimal("400000"),
-                spentAmount = BigDecimal("150000"),
-                monthYear = currentMonth,
-                warningThresholdPercent = 80
-            )
-        )
-
-        _accounts.value = initialAccounts
-        _debts.value = initialDebts
-        _transactions.value = initialTransactions
-        _budgets.value = FinanceEngine.updateBudgetSpending(initialBudgets, initialTransactions, currentMonth)
-
-        // Seed initial AI conversation
+        // Welcome message
         _chatMessages.value = listOf(
             AiChatMessage(
-                id = "MSG-01",
+                id = "MSG-WELCOME",
                 isUser = false,
-                text = "Xin chào! Tôi là **LTM AI Finance Assistant** của bạn.\n\n" +
-                        "Tôi kết nối trực tiếp với **Finance Engine** để bảo đảm mọi tính toán số dư, ngân sách và dự báo đều chính xác 100%.\n\n" +
-                        "Bạn có thể hỏi tôi về đánh giá mua sắm, dự báo dòng tiền 30 ngày, hoặc xem các cảnh báo ngân sách kịp thời."
+                text = "Xin chào! Tôi là **LTM AI Finance Assistant**.\n\n" +
+                        "Hệ thống đã sẵn sàng cho bạn. Bạn có thể:\n" +
+                        "1. Thêm tài khoản/ví của bạn tại tab **Tài sản**.\n" +
+                        "2. Tạo định mức tại tab **Ngân sách**.\n" +
+                        "3. Nhập câu tự nhiên như *\"Ăn trưa 35k ví momo\"* để tôi tự phân tích và tạo lệnh ghi sổ nhanh!"
             )
         )
-
-        // Generate proactive alerts
-        refreshProactiveAlerts()
-
-        // Seed initial research events
-        val initialEvents = listOf(
-            ResearchEngine.createEvent(
-                _userProfile.value.researchParticipantId,
-                "SYSTEM_INIT",
-                mapOf("academicYear" to 3, "study" to "Longitudinal Observational Study")
-            ),
-            ResearchEngine.createEvent(
-                _userProfile.value.researchParticipantId,
-                "BUDGET_CREATED",
-                mapOf("categoriesCount" to 5)
-            )
-        )
-        _researchEvents.value = initialEvents
+        logResearchEvent("APP_INITIALIZED", mapOf("mode" to "CLEAN_START"))
     }
 
     fun refreshProactiveAlerts() {
@@ -288,7 +108,172 @@ class FinanceRepository(private val context: Context? = null) {
         _recommendations.value = alerts
     }
 
-    // FR-003, FR-004, FR-005: Add Transaction
+    // ==========================================
+    // 1. TÀI KHOẢN & TÀI SẢN (Thêm, Sửa, Xóa thủ công)
+    // ==========================================
+    fun addAccount(
+        name: String,
+        type: AccountType,
+        balance: BigDecimal,
+        provider: String = "",
+        isLiquid: Boolean = true,
+        interestRateYearly: Double = 0.0,
+        maturityDate: String? = null,
+        termMonths: Int = 0
+    ) {
+        val newAccount = FinancialAccount(
+            id = "ACC-${UUID.randomUUID().toString().take(6)}",
+            name = name,
+            type = type,
+            balance = balance,
+            provider = provider.ifBlank { type.displayName },
+            isLiquid = isLiquid,
+            interestRateYearly = interestRateYearly,
+            maturityDate = maturityDate,
+            termMonths = termMonths,
+            updatedAt = System.currentTimeMillis()
+        )
+        _accounts.value = _accounts.value + newAccount
+        logResearchEvent("ACCOUNT_CREATED", mapOf("name" to name, "type" to type.name, "balance" to balance.toString()))
+        refreshProactiveAlerts()
+    }
+
+    fun editAccount(
+        id: String,
+        name: String,
+        balance: BigDecimal,
+        provider: String,
+        isLiquid: Boolean,
+        interestRateYearly: Double = 0.0,
+        maturityDate: String? = null
+    ) {
+        _accounts.value = _accounts.value.map {
+            if (it.id == id) {
+                it.copy(
+                    name = name,
+                    balance = balance,
+                    provider = provider,
+                    isLiquid = isLiquid,
+                    interestRateYearly = interestRateYearly,
+                    maturityDate = maturityDate,
+                    updatedAt = System.currentTimeMillis()
+                )
+            } else it
+        }
+        logResearchEvent("ACCOUNT_EDITED", mapOf("id" to id, "newBalance" to balance.toString()))
+        refreshProactiveAlerts()
+    }
+
+    fun deleteAccount(id: String) {
+        _accounts.value = _accounts.value.filter { it.id != id }
+        logResearchEvent("ACCOUNT_DELETED", mapOf("id" to id))
+        refreshProactiveAlerts()
+    }
+
+    // ==========================================
+    // 2. KHOẢN NỢ & VAY (Thêm, Sửa, Xóa thủ công)
+    // ==========================================
+    fun addDebt(
+        name: String,
+        type: DebtType,
+        initialAmount: BigDecimal,
+        currentBalance: BigDecimal,
+        interestRateYearly: Double,
+        paymentDueDay: Int,
+        creditLimit: BigDecimal? = null
+    ) {
+        val today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+        val nextDue = LocalDate.now().withDayOfMonth(paymentDueDay.coerceIn(1, 28)).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+        val newDebt = Debt(
+            id = "DEBT-${UUID.randomUUID().toString().take(6)}",
+            name = name,
+            type = type,
+            initialAmount = initialAmount,
+            currentBalance = currentBalance,
+            interestRateYearly = interestRateYearly,
+            creditLimit = creditLimit,
+            paymentDueDay = paymentDueDay,
+            monthlyPaymentEstimate = currentBalance,
+            startDate = today,
+            endDate = today,
+            schedules = listOf(
+                RepaymentSchedule(
+                    id = "SCH-${UUID.randomUUID().toString().take(6)}",
+                    debtId = "",
+                    dueDate = nextDue,
+                    principal = currentBalance,
+                    interest = BigDecimal.ZERO,
+                    status = RepaymentStatus.UPCOMING
+                )
+            )
+        )
+        _debts.value = _debts.value + newDebt
+        logResearchEvent("DEBT_CREATED", mapOf("name" to name, "balance" to currentBalance.toString()))
+        refreshProactiveAlerts()
+    }
+
+    fun deleteDebt(id: String) {
+        _debts.value = _debts.value.filter { it.id != id }
+        logResearchEvent("DEBT_DELETED", mapOf("id" to id))
+        refreshProactiveAlerts()
+    }
+
+    // ==========================================
+    // 3. NGÂN SÁCH (Thêm, Sửa, Xóa thủ công)
+    // ==========================================
+    fun addBudget(
+        category: String,
+        amount: BigDecimal,
+        warningThresholdPercent: Int = 80
+    ) {
+        val currentMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"))
+        val newBudget = Budget(
+            id = "BG-${UUID.randomUUID().toString().take(6)}",
+            category = category,
+            originalAmount = amount,
+            currentAmount = amount,
+            spentAmount = BigDecimal.ZERO,
+            monthYear = currentMonth,
+            warningThresholdPercent = warningThresholdPercent
+        )
+        val updatedBudgets = _budgets.value + newBudget
+        _budgets.value = FinanceEngine.updateBudgetSpending(updatedBudgets, _transactions.value, currentMonth)
+        logResearchEvent("BUDGET_CREATED", mapOf("category" to category, "amount" to amount.toString()))
+        refreshProactiveAlerts()
+    }
+
+    fun adjustBudget(budgetId: String, newAmount: BigDecimal, reason: String, modifiedBy: String = "User") {
+        val updated = _budgets.value.map { b ->
+            if (b.id == budgetId) {
+                val adj = BudgetAdjustment(
+                    id = "ADJ-${UUID.randomUUID().toString().take(6)}",
+                    previousAmount = b.currentAmount,
+                    newAmount = newAmount,
+                    modifiedBy = modifiedBy,
+                    reason = reason
+                )
+                b.copy(
+                    userAdjustedAmount = if (modifiedBy == "User") newAmount else b.userAdjustedAmount,
+                    aiProposedAmount = if (modifiedBy.contains("AI")) newAmount else b.aiProposedAmount,
+                    currentAmount = newAmount,
+                    adjustments = b.adjustments + adj
+                )
+            } else b
+        }
+        _budgets.value = updated
+        logResearchEvent("BUDGET_ADJUSTED", mapOf("budgetId" to budgetId, "newAmount" to newAmount.toString(), "reason" to reason))
+        refreshProactiveAlerts()
+    }
+
+    fun deleteBudget(budgetId: String) {
+        _budgets.value = _budgets.value.filter { it.id != budgetId }
+        logResearchEvent("BUDGET_DELETED", mapOf("budgetId" to budgetId))
+        refreshProactiveAlerts()
+    }
+
+    // ==========================================
+    // 4. GIAO DỊCH (Thêm, Xóa, Chuyển tiền)
+    // ==========================================
     fun addTransaction(
         type: TransactionType,
         amount: BigDecimal,
@@ -330,7 +315,7 @@ class FinanceRepository(private val context: Context? = null) {
                 }
             }
             TransactionType.TRANSFER -> {
-                if (targetAccountId != null) {
+                if (targetAccountId != null && targetAccountId != accountId) {
                     _accounts.value = FinanceEngine.applyTransfer(currentAccounts, accountId, targetAccountId, amount)
                 }
             }
@@ -343,37 +328,44 @@ class FinanceRepository(private val context: Context? = null) {
         val currentMonth = date.take(7)
         _budgets.value = FinanceEngine.updateBudgetSpending(_budgets.value, updatedTxList, currentMonth)
 
-        // Log Research Event
         logResearchEvent("TRANSACTION_LOGGED", mapOf("type" to type.name, "amount" to amount.toString(), "category" to category))
-
         refreshProactiveAlerts()
     }
 
-    // FR-016: Adjust Budget
-    fun adjustBudget(budgetId: String, newAmount: BigDecimal, reason: String, modifiedBy: String = "User") {
-        val updated = _budgets.value.map { b ->
-            if (b.id == budgetId) {
-                val adj = BudgetAdjustment(
-                    id = "ADJ-${UUID.randomUUID().toString().take(6)}",
-                    previousAmount = b.currentAmount,
-                    newAmount = newAmount,
-                    modifiedBy = modifiedBy,
-                    reason = reason
-                )
-                b.copy(
-                    userAdjustedAmount = if (modifiedBy == "User") newAmount else b.userAdjustedAmount,
-                    aiProposedAmount = if (modifiedBy.contains("AI")) newAmount else b.aiProposedAmount,
-                    currentAmount = newAmount,
-                    adjustments = b.adjustments + adj
-                )
-            } else b
+    fun deleteTransaction(txId: String) {
+        val tx = _transactions.value.find { it.id == txId } ?: return
+        _transactions.value = _transactions.value.filter { it.id != txId }
+
+        // Revert balance
+        val currentAccounts = _accounts.value.toMutableList()
+        when (tx.type) {
+            TransactionType.INCOME -> {
+                val idx = currentAccounts.indexOfFirst { it.id == tx.accountId }
+                if (idx != -1) currentAccounts[idx] = currentAccounts[idx].copy(balance = currentAccounts[idx].balance.subtract(tx.amount))
+            }
+            TransactionType.EXPENSE -> {
+                val idx = currentAccounts.indexOfFirst { it.id == tx.accountId }
+                if (idx != -1) currentAccounts[idx] = currentAccounts[idx].copy(balance = currentAccounts[idx].balance.add(tx.amount))
+            }
+            TransactionType.TRANSFER -> {
+                if (tx.targetAccountId != null) {
+                    _accounts.value = FinanceEngine.applyTransfer(currentAccounts, tx.targetAccountId, tx.accountId, tx.amount)
+                }
+            }
         }
-        _budgets.value = updated
-        logResearchEvent("BUDGET_ADJUSTED", mapOf("budgetId" to budgetId, "newAmount" to newAmount.toString(), "reason" to reason))
+        if (tx.type != TransactionType.TRANSFER) {
+            _accounts.value = currentAccounts
+        }
+
+        val currentMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"))
+        _budgets.value = FinanceEngine.updateBudgetSpending(_budgets.value, _transactions.value, currentMonth)
+        logResearchEvent("TRANSACTION_DELETED", mapOf("id" to txId))
         refreshProactiveAlerts()
     }
 
-    // FR-024: Update Recommendation Status
+    // ==========================================
+    // 5. AI CONVERSATION & RECOMMENDATION LOG
+    // ==========================================
     fun updateRecommendationStatus(
         recId: String,
         status: RecommendationStatus,
@@ -394,7 +386,6 @@ class FinanceRepository(private val context: Context? = null) {
         logResearchEvent("AI_RECOMMENDATION_STATUS_CHANGE", mapOf("recId" to recId, "status" to status.name))
     }
 
-    // Send On-Demand Chat Message
     fun sendChatMessage(userText: String) {
         val userMsg = AiChatMessage(
             id = UUID.randomUUID().toString(),
@@ -413,7 +404,77 @@ class FinanceRepository(private val context: Context? = null) {
         logResearchEvent("AI_CHAT_QUERY", mapOf("length" to userText.length))
     }
 
-    // Update Consent
+    // ==========================================
+    // 6. HỒ SƠ, BẢO MẬT & SAO LƯU (Ltmsav features)
+    // ==========================================
+    fun updateUserProfile(
+        displayName: String,
+        university: String,
+        academicYear: Int,
+        monthlyAllowance: BigDecimal,
+        partTimeIncome: BigDecimal,
+        financialGoal: String
+    ) {
+        _userProfile.value = _userProfile.value.copy(
+            displayName = displayName,
+            university = university,
+            academicYear = academicYear,
+            monthlyAllowance = monthlyAllowance,
+            partTimeIncome = partTimeIncome,
+            financialGoal = financialGoal
+        )
+        logResearchEvent("PROFILE_UPDATED", mapOf("name" to displayName))
+    }
+
+    fun setSecurityPin(pin: String?) {
+        _securityPin.value = pin
+    }
+
+    fun resetAllData() {
+        _accounts.value = emptyList()
+        _transactions.value = emptyList()
+        _debts.value = emptyList()
+        _budgets.value = emptyList()
+        _recommendations.value = emptyList()
+        _chatMessages.value = listOf(
+            AiChatMessage(
+                id = "MSG-RESET",
+                isUser = false,
+                text = "Đã dọn sạch toàn bộ dữ liệu. Bạn có thể bắt đầu tạo tài khoản và ghi chép mới!"
+            )
+        )
+        logResearchEvent("ALL_DATA_RESET", emptyMap())
+    }
+
+    fun exportBackupJson(): String {
+        val wrapper = BackupDataWrapper(
+            userProfile = _userProfile.value,
+            accounts = _accounts.value,
+            transactions = _transactions.value,
+            debts = _debts.value,
+            budgets = _budgets.value,
+            pinCode = _securityPin.value
+        )
+        return gson.toJson(wrapper)
+    }
+
+    fun importBackupJson(jsonStr: String): Boolean {
+        return try {
+            val wrapper = gson.fromJson(jsonStr, BackupDataWrapper::class.java)
+            _userProfile.value = wrapper.userProfile
+            _accounts.value = wrapper.accounts
+            _transactions.value = wrapper.transactions
+            _debts.value = wrapper.debts
+            _budgets.value = wrapper.budgets
+            _securityPin.value = wrapper.pinCode
+            refreshProactiveAlerts()
+            logResearchEvent("BACKUP_RESTORED", emptyMap())
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     fun updateConsent(terms: Boolean, ai: Boolean, research: Boolean) {
         _userProfile.value = _userProfile.value.copy(
             consentTerms = terms,
@@ -423,11 +484,10 @@ class FinanceRepository(private val context: Context? = null) {
         logResearchEvent("CONSENT_UPDATED", mapOf("ai" to ai, "research" to research))
     }
 
-    private fun logResearchEvent(type: String, meta: Map<String, Any>) {
+    fun logResearchEvent(type: String, meta: Map<String, Any>) {
         if (_userProfile.value.consentResearchStudy) {
             val event = ResearchEngine.createEvent(_userProfile.value.researchParticipantId, type, meta)
             _researchEvents.value = _researchEvents.value + event
         }
     }
 }
-

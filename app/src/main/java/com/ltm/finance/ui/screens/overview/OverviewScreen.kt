@@ -35,11 +35,13 @@ fun OverviewScreen(
     onNavigateToAi: () -> Unit,
     onNavigateToForecast: () -> Unit,
     onNavigateToSimulation: () -> Unit,
-    onOpenAddTransaction: () -> Unit,
-    onNavigateToResearch: () -> Unit
+    onNavigateToReports: () -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onOpenAddTransaction: () -> Unit
 ) {
     val overview by viewModel.overviewState.collectAsState()
     val userProfile by viewModel.userProfile.collectAsState()
+    val accounts by viewModel.accounts.collectAsState()
 
     LazyColumn(
         modifier = Modifier
@@ -48,7 +50,7 @@ fun OverviewScreen(
         contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // 1. iOS Glass Header with Integrated Research Action
+        // 1. iOS Glass Header with Settings Icon (Research is hidden from normal user UI)
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -84,34 +86,36 @@ fun OverviewScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Research Center Action Pill
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(LiquidPurple.copy(alpha = 0.2f))
-                            .border(1.dp, LiquidPurple.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
-                            .clickable { onNavigateToResearch() }
-                            .padding(horizontal = 10.dp, vertical = 6.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Science, contentDescription = null, tint = LiquidPurple, modifier = Modifier.size(14.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Nghiên cứu", fontSize = 11.sp, color = LiquidPurple, fontWeight = FontWeight.Bold, maxLines = 1)
-                        }
-                    }
-
-                    // Student Avatar Pill
+                    // Settings Button
                     Box(
                         modifier = Modifier
                             .size(38.dp)
                             .clip(CircleShape)
                             .background(GlassBase)
-                            .border(1.dp, GlassBorderStroke, CircleShape),
+                            .border(1.dp, GlassBorderStroke, CircleShape)
+                            .clickable { onNavigateToSettings() },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.School,
-                            contentDescription = "Sinh viên",
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Cài đặt",
+                            tint = TextSecondary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    // Avatar
+                    Box(
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(CircleShape)
+                            .background(LiquidCyan.copy(alpha = 0.2f))
+                            .border(1.dp, LiquidCyan.copy(alpha = 0.5f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Hồ sơ",
                             tint = LiquidCyan,
                             modifier = Modifier.size(20.dp)
                         )
@@ -120,7 +124,7 @@ fun OverviewScreen(
             }
         }
 
-        // 2. Hero Glass Card: The 5 Core PRD Answers
+        // 2. Hero Glass Card: Net Worth & Clean Available Cash
         item {
             LiquidGlassCard(
                 modifier = Modifier.fillMaxWidth(),
@@ -339,11 +343,11 @@ fun OverviewScreen(
                     onClick = onNavigateToAi
                 )
                 QuickActionItem(
-                    icon = Icons.Default.Timeline,
-                    title = "Dự báo",
+                    icon = Icons.Default.BarChart,
+                    title = "Báo cáo",
                     color = LiquidCyan,
                     modifier = Modifier.weight(1f),
-                    onClick = onNavigateToForecast
+                    onClick = onNavigateToReports
                 )
                 QuickActionItem(
                     icon = Icons.Default.Calculate,

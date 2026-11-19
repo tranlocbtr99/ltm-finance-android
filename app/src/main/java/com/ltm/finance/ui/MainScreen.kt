@@ -30,7 +30,10 @@ import com.ltm.finance.ui.screens.assets_debts.AccountsDebtsScreen
 import com.ltm.finance.ui.screens.budgets.BudgetsScreen
 import com.ltm.finance.ui.screens.forecast_simulation.ForecastSimulationScreen
 import com.ltm.finance.ui.screens.overview.OverviewScreen
+import com.ltm.finance.ui.screens.reports.ReportsScreen
 import com.ltm.finance.ui.screens.research.ResearchCenterScreen
+import com.ltm.finance.ui.screens.settings.SecurityLockScreen
+import com.ltm.finance.ui.screens.settings.SettingsScreen
 import com.ltm.finance.ui.screens.transactions.AddTransactionDialog
 import com.ltm.finance.ui.screens.transactions.TransactionsScreen
 import com.ltm.finance.ui.theme.*
@@ -45,9 +48,21 @@ enum class NavigationTab(val label: String, val icon: ImageVector, val selectedI
 
 @Composable
 fun MainScreen(viewModel: MainViewModel) {
+    val isUnlocked by viewModel.isUnlocked.collectAsState()
+
+    // If PIN lock is active, block UI until unlocked
+    if (!isUnlocked) {
+        SecurityLockScreen(onVerifyPin = { enteredPin ->
+            viewModel.verifyPin(enteredPin)
+        })
+        return
+    }
+
     var currentTab by remember { mutableStateOf(NavigationTab.OVERVIEW) }
     var showForecastSimulation by remember { mutableStateOf(false) }
-    var showResearchCenter by remember { mutableStateOf(false) }
+    var showReportsScreen by remember { mutableStateOf(false) }
+    var showSettingsScreen by remember { mutableStateOf(false) }
+    var showAdminPortal by remember { mutableStateOf(false) }
     var showAddTransactionDialog by remember { mutableStateOf(false) }
 
     val accounts by viewModel.accounts.collectAsState()
@@ -60,7 +75,9 @@ fun MainScreen(viewModel: MainViewModel) {
                     currentTab = currentTab,
                     onTabSelected = {
                         showForecastSimulation = false
-                        showResearchCenter = false
+                        showReportsScreen = false
+                        showSettingsScreen = false
+                        showAdminPortal = false
                         currentTab = it
                     }
                 )
@@ -71,11 +88,66 @@ fun MainScreen(viewModel: MainViewModel) {
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-                // Secondary screens or Primary Tab
                 when {
+                    showReportsScreen -> {
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                IconButton(onClick = { showReportsScreen = false }) {
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại", tint = TextPrimary)
+                                }
+                                Text("Quay lại", fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
+                            }
+                            ReportsScreen(viewModel = viewModel)
+                        }
+                    }
+
+                    showSettingsScreen -> {
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                IconButton(onClick = { showSettingsScreen = false }) {
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại", tint = TextPrimary)
+                                }
+                                Text("Quay lại", fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
+                            }
+                            SettingsScreen(
+                                viewModel = viewModel,
+                                onOpenAdminPortal = {
+                                    showSettingsScreen = false
+                                    showAdminPortal = true
+                                }
+                            )
+                        }
+                    }
+
+                    showAdminPortal -> {
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                IconButton(onClick = { showAdminPortal = false }) {
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại", tint = TextPrimary)
+                                }
+                                Text("Cổng Quản Trị Hệ Thống", fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Bold)
+                            }
+                            ResearchCenterScreen(viewModel = viewModel)
+                        }
+                    }
+
                     showForecastSimulation -> {
                         Column(modifier = Modifier.fillMaxSize()) {
-                            // Back header
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -91,25 +163,7 @@ fun MainScreen(viewModel: MainViewModel) {
                         }
                     }
 
-                    showResearchCenter -> {
-                        Column(modifier = Modifier.fillMaxSize()) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                IconButton(onClick = { showResearchCenter = false }) {
-                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại", tint = TextPrimary)
-                                }
-                                Text("Quay lại", fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
-                            }
-                            ResearchCenterScreen(viewModel = viewModel)
-                        }
-                    }
-
                     else -> {
-                        // Main Tab Views
                         when (currentTab) {
                             NavigationTab.OVERVIEW -> OverviewScreen(
                                 viewModel = viewModel,
@@ -117,8 +171,9 @@ fun MainScreen(viewModel: MainViewModel) {
                                 onNavigateToAi = { currentTab = NavigationTab.AI },
                                 onNavigateToForecast = { showForecastSimulation = true },
                                 onNavigateToSimulation = { showForecastSimulation = true },
-                                onOpenAddTransaction = { showAddTransactionDialog = true },
-                                onNavigateToResearch = { showResearchCenter = true }
+                                onNavigateToReports = { showReportsScreen = true },
+                                onNavigateToSettings = { showSettingsScreen = true },
+                                onOpenAddTransaction = { showAddTransactionDialog = true }
                             )
                             NavigationTab.TRANSACTIONS -> TransactionsScreen(
                                 viewModel = viewModel,
@@ -140,7 +195,7 @@ fun MainScreen(viewModel: MainViewModel) {
             }
         }
 
-        // Add Transaction Dialog (FR-003, FR-004, FR-005)
+        // Add Transaction Dialog
         if (showAddTransactionDialog) {
             AddTransactionDialog(
                 accounts = accounts,
@@ -164,7 +219,6 @@ fun LiquidGlassBottomBar(
             .padding(horizontal = 14.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center
     ) {
-        // Floating iOS Liquid Glass Pill Bar with weight(1f) to guarantee no text wrapping
         Box(
             modifier = Modifier
                 .fillMaxWidth()

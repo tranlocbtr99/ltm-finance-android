@@ -31,6 +31,15 @@ enum class AdviceFeedback(val displayName: String) {
     LACK_INFO("Không đủ thông tin")
 }
 
+data class TransactionDraft(
+    val type: TransactionType,
+    val amount: BigDecimal,
+    val category: String,
+    val accountId: String,
+    val targetAccountId: String? = null,
+    val note: String
+)
+
 data class AiRecommendation(
     val id: String,
     val category: String,
@@ -53,6 +62,6 @@ data class AiChatMessage(
     val text: String,
     val timestamp: Long = System.currentTimeMillis(),
     val linkedRecommendation: AiRecommendation? = null,
+    val draftTransaction: TransactionDraft? = null,
     val actionSuggestion: String? = null
 )
-

@@ -29,6 +29,8 @@ import com.ltm.finance.ui.components.LiquidGlassCard
 import com.ltm.finance.ui.components.LiquidSegmentedControl
 import com.ltm.finance.ui.theme.*
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun AiAssistantScreen(
@@ -38,18 +40,18 @@ fun AiAssistantScreen(
     val chatMessages by viewModel.chatMessages.collectAsState()
     val recommendations by viewModel.recommendations.collectAsState()
     var selectedTab by remember { mutableIntStateOf(0) }
-    // Concise tab titles to prevent text wrapping on mobile
     val tabs = listOf("Trò chuyện AI", "Nhật ký Lời khuyên")
 
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     var inputText by remember { mutableStateOf("") }
+    val confirmedDraftIds = remember { mutableStateListOf<String>() }
 
     val suggestedPrompts = listOf(
+        "Ăn trưa 35k ví tiền mặt",
+        "Đổ xăng xe máy 60k",
         "Tôi có nên mua laptop 20tr không?",
-        "Tháng này tôi đã chi quá nhiều vào đâu?",
-        "Tôi có đủ tiền trả khoản vay tháng sau không?",
-        "Hãy lập kế hoạch tiết kiệm 5 triệu trong 3 tháng."
+        "Tháng này tôi đã chi quá nhiều vào đâu?"
     )
 
     Column(
@@ -101,7 +103,7 @@ fun AiAssistantScreen(
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text(
-                            text = "Gợi ý câu hỏi:",
+                            text = "Gợi ý hoặc nhập lệnh nhanh:",
                             fontSize = 11.sp,
                             color = TextSecondary,
                             fontWeight = FontWeight.Medium
@@ -198,6 +200,43 @@ fun AiAssistantScreen(
                                     lineHeight = 19.sp
                                 )
 
+                                // ⚡ 1-Tap Confirmation for Natural Language Transaction Draft (Ltmsav)
+                                msg.draftTransaction?.let { draft ->
+                                    val isConfirmed = confirmedDraftIds.contains(msg.id)
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                    Button(
+                                        onClick = {
+                                            if (!isConfirmed) {
+                                                val today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                                                viewModel.addTransaction(
+                                                    type = draft.type,
+                                                    amount = draft.amount,
+                                                    date = today,
+                                                    accountId = draft.accountId,
+                                                    targetAccountId = draft.targetAccountId,
+                                                    category = draft.category,
+                                                    note = draft.note
+                                                )
+                                                confirmedDraftIds.add(msg.id)
+                                            }
+                                        },
+                                        enabled = !isConfirmed,
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = if (isConfirmed) LiquidEmerald.copy(alpha = 0.3f) else LiquidEmerald,
+                                            disabledContainerColor = LiquidEmerald.copy(alpha = 0.3f)
+                                        ),
+                                        shape = RoundedCornerShape(10.dp)
+                                    ) {
+                                        Text(
+                                            text = if (isConfirmed) "✅ Đã ghi vào sổ giao dịch" else "⚡ Xác nhận ghi vào sổ ngay",
+                                            color = if (isConfirmed) LiquidEmerald else DarkObsidian,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 12.sp,
+                                            maxLines = 1
+                                        )
+                                    }
+                                }
+
                                 if (msg.actionSuggestion != null) {
                                     Spacer(modifier = Modifier.height(10.dp))
                                     Button(
@@ -230,7 +269,7 @@ fun AiAssistantScreen(
                     TextField(
                         value = inputText,
                         onValueChange = { inputText = it },
-                        placeholder = { Text("Hỏi AI về tài chính...", color = TextTertiary, fontSize = 13.sp) },
+                        placeholder = { Text("Hỏi AI hoặc nhập lệnh nhanh...", color = TextTertiary, fontSize = 13.sp) },
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
                             unfocusedContainerColor = Color.Transparent,

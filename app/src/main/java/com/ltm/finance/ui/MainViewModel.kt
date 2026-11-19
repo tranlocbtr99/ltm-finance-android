@@ -39,6 +39,11 @@ class MainViewModel(
     val recommendations = repository.recommendations
     val chatMessages = repository.chatMessages
     val researchEvents = repository.researchEvents
+    val securityPin = repository.securityPin
+
+    // Security Lock state
+    private val _isUnlocked = MutableStateFlow(true)
+    val isUnlocked = _isUnlocked.asStateFlow()
 
     private val _forecastDays = MutableStateFlow(30)
     val forecastDays = _forecastDays.asStateFlow()
@@ -116,7 +121,7 @@ class MainViewModel(
         CashflowForecast(30, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, emptyList(), emptyList())
     )
 
-    // Research Metrics
+    // Research & Admin Metrics
     val researchMetrics: StateFlow<ResearchSummaryMetrics> = combine(
         researchEvents,
         recommendations,
@@ -137,10 +142,95 @@ class MainViewModel(
         ResearchSummaryMetrics("N/A", 0, 100.0, 0, 0.0, 0.0, 1)
     )
 
+    // Check PIN lock on launch
+    init {
+        viewModelScope.launch {
+            securityPin.collect { pin ->
+                if (!pin.isNullOrBlank()) {
+                    _isUnlocked.value = false
+                } else {
+                    _isUnlocked.value = true
+                }
+            }
+        }
+    }
+
+    fun verifyPin(enteredPin: String): Boolean {
+        return if (securityPin.value == enteredPin) {
+            _isUnlocked.value = true
+            true
+        } else {
+            false
+        }
+    }
+
+    fun setSecurityPin(newPin: String?) {
+        repository.setSecurityPin(newPin)
+    }
+
     fun setForecastDays(days: Int) {
         _forecastDays.value = days
     }
 
+    // Account CRUD
+    fun addAccount(
+        name: String,
+        type: AccountType,
+        balance: BigDecimal,
+        provider: String,
+        isLiquid: Boolean,
+        interestRateYearly: Double = 0.0,
+        maturityDate: String? = null
+    ) {
+        repository.addAccount(name, type, balance, provider, isLiquid, interestRateYearly, maturityDate)
+    }
+
+    fun editAccount(
+        id: String,
+        name: String,
+        balance: BigDecimal,
+        provider: String,
+        isLiquid: Boolean,
+        interestRateYearly: Double = 0.0,
+        maturityDate: String? = null
+    ) {
+        repository.editAccount(id, name, balance, provider, isLiquid, interestRateYearly, maturityDate)
+    }
+
+    fun deleteAccount(id: String) {
+        repository.deleteAccount(id)
+    }
+
+    // Budget CRUD
+    fun addBudget(category: String, amount: BigDecimal, warningThreshold: Int = 80) {
+        repository.addBudget(category, amount, warningThreshold)
+    }
+
+    fun adjustBudget(budgetId: String, newAmount: BigDecimal, reason: String) {
+        repository.adjustBudget(budgetId, newAmount, reason, "User")
+    }
+
+    fun deleteBudget(budgetId: String) {
+        repository.deleteBudget(budgetId)
+    }
+
+    // Debt CRUD
+    fun addDebt(
+        name: String,
+        type: DebtType,
+        initialAmount: BigDecimal,
+        currentBalance: BigDecimal,
+        interestRateYearly: Double,
+        paymentDueDay: Int
+    ) {
+        repository.addDebt(name, type, initialAmount, currentBalance, interestRateYearly, paymentDueDay)
+    }
+
+    fun deleteDebt(id: String) {
+        repository.deleteDebt(id)
+    }
+
+    // Transaction CRUD
     fun addTransaction(
         type: TransactionType,
         amount: BigDecimal,
@@ -153,10 +243,11 @@ class MainViewModel(
         repository.addTransaction(type, amount, date, accountId, targetAccountId, category, note)
     }
 
-    fun adjustBudget(budgetId: String, newAmount: BigDecimal, reason: String) {
-        repository.adjustBudget(budgetId, newAmount, reason, "User")
+    fun deleteTransaction(txId: String) {
+        repository.deleteTransaction(txId)
     }
 
+    // AI
     fun applyAiBudgetRecommendation(rec: AiRecommendation) {
         if (rec.proposedBudget != null) {
             val budget = budgets.value.find { it.category == rec.category }
@@ -203,5 +294,24 @@ class MainViewModel(
     fun updateConsent(terms: Boolean, ai: Boolean, research: Boolean) {
         repository.updateConsent(terms, ai, research)
     }
-}
 
+    // Profile & Reset
+    fun updateUserProfile(
+        displayName: String,
+        university: String,
+        academicYear: Int,
+        monthlyAllowance: BigDecimal,
+        partTimeIncome: BigDecimal,
+        financialGoal: String
+    ) {
+        repository.updateUserProfile(displayName, university, academicYear, monthlyAllowance, partTimeIncome, financialGoal)
+    }
+
+    fun resetAllData() {
+        repository.resetAllData()
+    }
+
+    fun exportBackupJson(): String = repository.exportBackupJson()
+
+    fun importBackupJson(json: String): Boolean = repository.importBackupJson(json)
+}
