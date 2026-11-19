@@ -8,20 +8,22 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.TrendingDown
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ltm.finance.data.model.TransactionType
 import com.ltm.finance.data.storage.CloudSyncStatus
 import com.ltm.finance.domain.FinanceEngine
 import com.ltm.finance.ui.MainViewModel
@@ -43,6 +45,11 @@ fun OverviewScreen(
     val overview by viewModel.overviewState.collectAsState()
     val userProfile by viewModel.userProfile.collectAsState()
     val accounts by viewModel.accounts.collectAsState()
+    val transactions by viewModel.transactions.collectAsState()
+    var isBalanceHidden by remember { mutableStateOf(false) }
+    var selectedChartPeriod by remember { mutableIntStateOf(1) } // 0: Tuần, 1: Tháng, 2: Quý, 3: Năm
+    val chartPeriods = listOf("Tuần", "Tháng", "Quý", "Năm")
+    val recentTransactions = remember(transactions) { transactions.take(5) }
 
     LazyColumn(
         modifier = Modifier
@@ -165,12 +172,12 @@ fun OverviewScreen(
             }
         }
 
-        // 2. Hero Glass Card: Net Worth & Clean Available Cash
+        // 2. Hero Balance Card (LTMsav Silver / Liquid Glass design)
         item {
             LiquidGlassCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
-                backgroundColor = Color(0xFF131D31).copy(alpha = 0.75f)
+                backgroundColor = Color(0xFF131D31).copy(alpha = 0.85f)
             ) {
                 Column(
                     modifier = Modifier
@@ -183,35 +190,31 @@ fun OverviewScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "TÀI SẢN RÒNG",
-                            fontSize = 11.sp,
+                            text = "TIỀN KHẢ DỤNG",
+                            fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp,
-                            color = TextSecondary,
-                            maxLines = 1
+                            color = TextSecondary
                         )
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(LiquidEmerald.copy(alpha = 0.2f))
-                                .border(1.dp, LiquidEmerald.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
-                                .padding(horizontal = 8.dp, vertical = 2.dp)
+                        // Eye Toggle Button (LTMsav hero-eye)
+                        IconButton(
+                            onClick = { isBalanceHidden = !isBalanceHidden },
+                            modifier = Modifier.size(28.dp)
                         ) {
-                            Text(
-                                text = "Finance Engine",
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = LiquidEmerald,
-                                maxLines = 1
+                            Icon(
+                                imageVector = if (isBalanceHidden) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                contentDescription = if (isBalanceHidden) "Hiện số dư" else "Ẩn số dư",
+                                tint = LiquidCyan,
+                                modifier = Modifier.size(18.dp)
                             )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
 
                     Text(
-                        text = FinanceEngine.formatVnd(overview.netWorth),
-                        fontSize = 30.sp,
+                        text = if (isBalanceHidden) "••••••••" else FinanceEngine.formatVnd(overview.liquidCash),
+                        fontSize = 32.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = TextPrimary,
                         maxLines = 1
@@ -219,29 +222,22 @@ fun OverviewScreen(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    // Liquid Cash vs Debt Breakdown
+                    // Secondary Split Card (LTMsav silver-balance-secondary)
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
+                            .clip(RoundedCornerShape(16.dp))
                             .background(Color.White.copy(alpha = 0.05f))
-                            .padding(horizontal = 12.dp, vertical = 10.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                            .border(1.dp, GlassBorderStroke, RoundedCornerShape(16.dp))
+                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(7.dp)
-                                        .clip(CircleShape)
-                                        .background(LiquidEmerald)
-                                )
-                                Spacer(modifier = Modifier.width(5.dp))
-                                Text("Khả dụng", fontSize = 11.sp, color = TextSecondary, maxLines = 1)
-                            }
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Tổng tài sản", fontSize = 11.sp, color = TextSecondary)
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = FinanceEngine.formatVnd(overview.liquidCash),
+                                text = if (isBalanceHidden) "••••••" else FinanceEngine.formatVnd(overview.totalAssets),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = LiquidEmerald,
@@ -249,26 +245,162 @@ fun OverviewScreen(
                             )
                         }
 
-                        Column(horizontalAlignment = Alignment.End) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(7.dp)
-                                        .clip(CircleShape)
-                                        .background(LiquidRose)
-                                )
-                                Spacer(modifier = Modifier.width(5.dp))
-                                Text("Tổng nợ", fontSize = 11.sp, color = TextSecondary, maxLines = 1)
-                            }
+                        Box(
+                            modifier = Modifier
+                                .width(1.dp)
+                                .height(32.dp)
+                                .background(GlassBorderStroke)
+                        )
+
+                        Column(
+                            modifier = Modifier.weight(1f).padding(start = 12.dp)
+                        ) {
+                            Text("Nợ cần trả", fontSize = 11.sp, color = TextSecondary)
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = FinanceEngine.formatVnd(overview.totalDebts),
+                                text = if (isBalanceHidden) "••••••" else FinanceEngine.formatVnd(overview.totalDebts),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = LiquidRose,
+                                color = if (overview.totalDebts > BigDecimal.ZERO) LiquidRose else TextSecondary,
                                 maxLines = 1
                             )
                         }
+                    }
+                }
+            }
+        }
+
+        // 3. Two Primary Action Buttons (LTMsav silver-home-actions)
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                // Primary Blue Gradient Button (+ Thêm giao dịch)
+                Box(
+                    modifier = Modifier
+                        .weight(1.3f)
+                        .height(48.dp)
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(Color(0xFF188DFF), Color(0xFF0071ED))
+                            )
+                        )
+                        .border(1.dp, Color(0xFF3D9DFF), RoundedCornerShape(999.dp))
+                        .clickable { onOpenAddTransaction() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Thêm giao dịch",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
+
+                // Glass Button (✨ Trợ lý AI)
+                LiquidGlassCard(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp)
+                        .clickable { onNavigateToAi() },
+                    shape = RoundedCornerShape(999.dp)
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.AutoAwesome,
+                                contentDescription = null,
+                                tint = LiquidCyan,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Trợ lý AI",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = TextPrimary
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // 4. Monthly In/Out Metric Tiles (LTMsav metric-tile)
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                // Income Tile
+                LiquidGlassCard(
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(20.dp),
+                    backgroundColor = Color(0xFF11733F).copy(alpha = 0.12f),
+                    borderColor = LiquidEmerald.copy(alpha = 0.35f)
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.TrendingUp,
+                                contentDescription = null,
+                                tint = LiquidEmerald,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Thu vào tháng", fontSize = 11.sp, color = LiquidEmerald, fontWeight = FontWeight.SemiBold)
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = if (isBalanceHidden) "••••••" else "+${FinanceEngine.formatVnd(overview.monthIncome)}",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = LiquidEmerald,
+                            maxLines = 1
+                        )
+                    }
+                }
+
+                // Expense Tile
+                LiquidGlassCard(
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(20.dp),
+                    backgroundColor = Color(0xFFBA3151).copy(alpha = 0.12f),
+                    borderColor = LiquidRose.copy(alpha = 0.35f)
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.TrendingDown,
+                                contentDescription = null,
+                                tint = LiquidRose,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Chi ra tháng", fontSize = 11.sp, color = LiquidRose, fontWeight = FontWeight.SemiBold)
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = if (isBalanceHidden) "••••••" else "-${FinanceEngine.formatVnd(overview.monthExpense)}",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = LiquidRose,
+                            maxLines = 1
+                        )
                     }
                 }
             }
@@ -541,6 +673,126 @@ fun OverviewScreen(
                             color = if (isPositive) LiquidEmerald else LiquidRose,
                             maxLines = 1
                         )
+                    }
+                }
+            }
+        }
+
+        // 7. Recent Transactions (5 latest - LTMsav style)
+        item {
+            LiquidGlassCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "GIAO DỊCH GẦN ĐÂY",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp,
+                            color = TextSecondary
+                        )
+                        Text(
+                            text = "Xem tất cả ➔",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = LiquidCyan,
+                            modifier = Modifier.clickable { onNavigateToTransactions() }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    if (recentTransactions.isEmpty()) {
+                        Text(
+                            text = "Chưa có giao dịch nào được ghi chép",
+                            fontSize = 12.sp,
+                            color = TextSecondary,
+                            modifier = Modifier.padding(vertical = 12.dp)
+                        )
+                    } else {
+                        recentTransactions.forEachIndexed { index, tx ->
+                            val iconColor = when (tx.type) {
+                                TransactionType.INCOME -> LiquidEmerald
+                                TransactionType.EXPENSE -> LiquidRose
+                                TransactionType.TRANSFER -> LiquidCyan
+                            }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 7.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(34.dp)
+                                            .clip(CircleShape)
+                                            .background(iconColor.copy(alpha = 0.15f))
+                                            .border(1.dp, iconColor.copy(alpha = 0.35f), CircleShape),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = when (tx.type) {
+                                                TransactionType.INCOME -> Icons.Default.ArrowDownward
+                                                TransactionType.EXPENSE -> Icons.Default.ArrowUpward
+                                                TransactionType.TRANSFER -> Icons.Default.SwapHoriz
+                                            },
+                                            contentDescription = null,
+                                            tint = iconColor,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Column {
+                                        Text(
+                                            text = tx.category,
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = TextPrimary,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Text(
+                                            text = tx.note.ifBlank { tx.date },
+                                            fontSize = 10.sp,
+                                            color = TextSecondary,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                }
+
+                                val amountPrefix = when (tx.type) {
+                                    TransactionType.INCOME -> "+"
+                                    TransactionType.EXPENSE -> "-"
+                                    TransactionType.TRANSFER -> ""
+                                }
+                                Text(
+                                    text = "$amountPrefix${FinanceEngine.formatVnd(tx.amount)}",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = iconColor,
+                                    maxLines = 1
+                                )
+                            }
+                            if (index < recentTransactions.size - 1) {
+                                HorizontalDivider(color = GlassBorderStroke.copy(alpha = 0.5f), modifier = Modifier.padding(vertical = 2.dp))
+                            }
+                        }
                     }
                 }
             }

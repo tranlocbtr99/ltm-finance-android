@@ -47,12 +47,35 @@ fun TransactionsScreen(
         }
     }
 
+    // Group transactions by date (LTMsav groupedByDate logic)
+    val groupedByDate = remember(filteredList) {
+        val today = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+        val yesterday = java.time.LocalDate.now().minusDays(1).format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+
+        filteredList.groupBy { it.date }
+            .map { (dateStr, txs) ->
+                val label = when (dateStr) {
+                    today -> "Hôm nay"
+                    yesterday -> "Hôm qua"
+                    else -> try {
+                        val parsed = java.time.LocalDate.parse(dateStr)
+                        parsed.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                    } catch (e: Exception) {
+                        dateStr
+                    }
+                }
+                val inTotal = txs.filter { it.type == TransactionType.INCOME }.fold(java.math.BigDecimal.ZERO) { a, b -> a.add(b.amount) }
+                val outTotal = txs.filter { it.type == TransactionType.EXPENSE }.fold(java.math.BigDecimal.ZERO) { a, b -> a.add(b.amount) }
+                Triple(label, inTotal to outTotal, txs)
+            }
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp),
         contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         // Header
         item {
@@ -114,7 +137,7 @@ fun TransactionsScreen(
             )
         }
 
-        // Transactions List
+        // Transactions List Grouped by Date (LTMsav style)
         if (filteredList.isEmpty()) {
             item {
                 Box(
@@ -131,7 +154,43 @@ fun TransactionsScreen(
                 }
             }
         } else {
-            items(filteredList, key = { it.id }) { tx ->
+            groupedByDate.forEach { (dateLabel, totals, txs) ->
+                item(key = "header_$dateLabel") {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp, bottom = 2.dp, start = 4.dp, end = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = dateLabel,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            if (totals.first > java.math.BigDecimal.ZERO) {
+                                Text(
+                                    text = "+${FinanceEngine.formatVnd(totals.first)}",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = LiquidEmerald
+                                )
+                            }
+                            if (totals.second > java.math.BigDecimal.ZERO) {
+                                Text(
+                                    text = "-${FinanceEngine.formatVnd(totals.second)}",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = LiquidRose
+                                )
+                            }
+                        }
+                    }
+                }
+
+                items(txs, key = { it.id }) { tx ->
                 val account = accounts.find { it.id == tx.accountId }
                 val targetAccount = if (tx.targetAccountId != null) accounts.find { it.id == tx.targetAccountId } else null
 
@@ -243,4 +302,5 @@ fun TransactionsScreen(
             }
         }
     }
+}
 }
