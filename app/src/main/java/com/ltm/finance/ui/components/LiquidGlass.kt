@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -31,7 +32,6 @@ fun LiquidGlassBackground(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit
 ) {
-    // Subtle ambient animated shimmer for fluid backdrop
     val infiniteTransition = rememberInfiniteTransition(label = "ambientShimmer")
     val animOffset by infiniteTransition.animateFloat(
         initialValue = 0f,
@@ -46,17 +46,17 @@ fun LiquidGlassBackground(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(DarkObsidian)
+            .background(LightCanvasBase)
     ) {
-        // 1. High-Resolution iOS Liquid Glass Wallpaper Image (Lush atmospheric backdrop)
+        // 1. High-Resolution iOS Light Liquid Glass Wallpaper Image
         Image(
-            painter = painterResource(id = R.drawable.bg_ios_liquid_wallpaper),
+            painter = painterResource(id = R.drawable.bg_ios_liquid_wallpaper_light),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
 
-        // 2. Dynamic Animated Fluid Orbs (VisionOS Refractive Aurora Glow)
+        // 2. Dynamic Animated Fluid Orbs (VisionOS Light Refractive Aurora Glow)
         Box(
             modifier = Modifier
                 .size(420.dp)
@@ -65,8 +65,7 @@ fun LiquidGlassBackground(
                 .background(
                     Brush.radialGradient(
                         colors = listOf(
-                            LiquidCyan.copy(alpha = 0.35f),
-                            LiquidIndigo.copy(alpha = 0.18f),
+                            LiquidCyan.copy(alpha = 0.18f),
                             Color.Transparent
                         )
                     )
@@ -82,8 +81,7 @@ fun LiquidGlassBackground(
                 .background(
                     Brush.radialGradient(
                         colors = listOf(
-                            LiquidPurple.copy(alpha = 0.32f),
-                            LiquidRose.copy(alpha = 0.15f),
+                            LiquidPurple.copy(alpha = 0.16f),
                             Color.Transparent
                         )
                     )
@@ -99,24 +97,23 @@ fun LiquidGlassBackground(
                 .background(
                     Brush.radialGradient(
                         colors = listOf(
-                            LiquidIndigo.copy(alpha = 0.28f),
-                            LiquidEmerald.copy(alpha = 0.12f),
+                            LiquidEmerald.copy(alpha = 0.14f),
                             Color.Transparent
                         )
                     )
                 )
         )
 
-        // 3. Apple Frosted Glass Atmospheric Scrim (Ensuring 100% Text Legibility)
+        // 3. Apple Frosted Glass Luminous Scrim
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
                         listOf(
-                            Color(0xFF070B14).copy(alpha = 0.35f),
-                            Color(0xFF070B14).copy(alpha = 0.20f),
-                            Color(0xFF070B14).copy(alpha = 0.50f)
+                            Color.White.copy(alpha = 0.15f),
+                            Color.White.copy(alpha = 0.05f),
+                            Color.White.copy(alpha = 0.25f)
                         )
                     )
                 )
@@ -139,12 +136,13 @@ fun LiquidGlassCard(
 
     Box(
         modifier = modifier
+            .shadow(elevation = 3.dp, shape = shape, spotColor = Color(0x140F172A), ambientColor = Color(0x0A0F172A))
             .clip(shape)
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        backgroundColor.copy(alpha = 0.52f),
-                        Color(0xFF0F172A).copy(alpha = 0.72f)
+                        backgroundColor,
+                        Color(0xFFF8FAFC).copy(alpha = 0.94f)
                     )
                 )
             )
@@ -153,14 +151,14 @@ fun LiquidGlassCard(
                 brush = Brush.verticalGradient(
                     colors = listOf(
                         GlassBorderTopHighlight,
-                        borderColor.copy(alpha = 0.08f)
+                        borderColor.copy(alpha = 0.6f)
                     )
                 ),
                 shape = shape
             )
             .then(clickModifier)
     ) {
-        // Subtle top specular highlight reflection (Apple visionOS material)
+        // Specular highlight line (Apple iOS 18 glass material)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -169,7 +167,7 @@ fun LiquidGlassCard(
                     Brush.horizontalGradient(
                         listOf(
                             Color.Transparent,
-                            Color.White.copy(alpha = 0.22f),
+                            Color.White,
                             Color.Transparent
                         )
                     )
@@ -184,13 +182,13 @@ fun LiquidGlassCard(
 fun LiquidGlassPill(
     text: String,
     modifier: Modifier = Modifier,
-    color: Color = LiquidCyan,
+    color: Color = LiquidBlue,
     isSelected: Boolean = false,
     onClick: (() -> Unit)? = null
 ) {
     val clickModifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
-    val bg = if (isSelected) color.copy(alpha = 0.28f) else GlassBaseLight
-    val border = if (isSelected) color.copy(alpha = 0.8f) else GlassBorderStroke
+    val bg = if (isSelected) color.copy(alpha = 0.14f) else Color.White.copy(alpha = 0.7f)
+    val border = if (isSelected) color else GlassBorderStroke
 
     Box(
         modifier = modifier
@@ -204,7 +202,7 @@ fun LiquidGlassPill(
             text = text,
             color = if (isSelected) color else TextSecondary,
             fontSize = 13.sp,
-            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
         )
     }
 }
@@ -214,7 +212,7 @@ fun LiquidProgressBar(
     progressPercent: Int,
     modifier: Modifier = Modifier,
     height: Dp = 8.dp,
-    barColor: Color = LiquidCyan
+    barColor: Color = LiquidBlue
 ) {
     val clamped = progressPercent.coerceIn(0, 100) / 100f
     val isOver = progressPercent > 100
@@ -225,7 +223,7 @@ fun LiquidProgressBar(
             .fillMaxWidth()
             .height(height)
             .clip(RoundedCornerShape(height / 2))
-            .background(Color.White.copy(alpha = 0.08f))
+            .background(Color(0xFFE2E8F0))
     ) {
         Box(
             modifier = Modifier
@@ -235,7 +233,7 @@ fun LiquidProgressBar(
                 .background(
                     Brush.horizontalGradient(
                         colors = listOf(
-                            activeColor.copy(alpha = 0.7f),
+                            activeColor.copy(alpha = 0.85f),
                             activeColor
                         )
                     )
@@ -255,9 +253,9 @@ fun LiquidSegmentedControl(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
-            .background(Color(0xFF0F172A).copy(alpha = 0.6f))
+            .background(Color(0xFFE2E8F0).copy(alpha = 0.65f))
             .border(1.dp, GlassBorderStroke, RoundedCornerShape(18.dp))
-            .padding(4.dp)
+            .padding(3.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -268,19 +266,14 @@ fun LiquidSegmentedControl(
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .clip(RoundedCornerShape(14.dp))
+                        .clip(RoundedCornerShape(15.dp))
                         .background(
-                            if (isSelected) Brush.verticalGradient(
-                                listOf(
-                                    Color.White.copy(alpha = 0.16f),
-                                    Color.White.copy(alpha = 0.06f)
-                                )
-                            ) else Brush.verticalGradient(listOf(Color.Transparent, Color.Transparent))
+                            if (isSelected) Color.White else Color.Transparent
                         )
-                        .border(
-                            width = if (isSelected) 1.dp else 0.dp,
-                            color = if (isSelected) GlassBorderTopHighlight else Color.Transparent,
-                            shape = RoundedCornerShape(14.dp)
+                        .shadow(
+                            elevation = if (isSelected) 2.dp else 0.dp,
+                            shape = RoundedCornerShape(15.dp),
+                            spotColor = Color(0x140F172A)
                         )
                         .clickable { onItemSelected(index) }
                         .padding(vertical = 8.dp),
@@ -289,7 +282,7 @@ fun LiquidSegmentedControl(
                     Text(
                         text = title,
                         fontSize = 13.sp,
-                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                         color = if (isSelected) TextPrimary else TextSecondary
                     )
                 }

@@ -228,13 +228,13 @@ fun SettingsScreen(
                                     showGoogleConfigDialog = true
                                 }
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = LiquidCyan),
+                            colors = ButtonDefaults.buttonColors(containerColor = LiquidBlue),
                             modifier = Modifier.fillMaxWidth().height(42.dp),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Icon(Icons.Default.Login, contentDescription = null, tint = DarkObsidian, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Default.Login, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Đăng nhập với Google OAuth", color = DarkObsidian, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                            Text("Đăng nhập với Google OAuth", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                         }
 
                         Spacer(modifier = Modifier.height(8.dp))
@@ -460,7 +460,7 @@ fun SettingsScreen(
             LiquidGlassCard(
                 modifier = Modifier.fillMaxWidth().padding(14.dp),
                 shape = RoundedCornerShape(22.dp),
-                backgroundColor = Color(0xFF0F172A).copy(alpha = 0.96f)
+                backgroundColor = GlassBaseCard
             ) {
                 Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("Chỉnh sửa hồ sơ sinh viên", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
@@ -483,8 +483,8 @@ fun SettingsScreen(
                                 )
                                 showEditProfileDialog = false
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = LiquidCyan)
-                        ) { Text("Lưu", color = DarkObsidian, fontWeight = FontWeight.Bold) }
+                            colors = ButtonDefaults.buttonColors(containerColor = LiquidBlue)
+                        ) { Text("Lưu", color = Color.White, fontWeight = FontWeight.Bold) }
                     }
                 }
             }
@@ -498,7 +498,7 @@ fun SettingsScreen(
             LiquidGlassCard(
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
                 shape = RoundedCornerShape(20.dp),
-                backgroundColor = Color(0xFF0F172A).copy(alpha = 0.96f)
+                backgroundColor = GlassBaseCard
             ) {
                 Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("Cài đặt mã PIN (4 số)", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
@@ -529,8 +529,8 @@ fun SettingsScreen(
                                         showPinDialog = false
                                     }
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = LiquidCyan)
-                            ) { Text("Xác nhận", color = DarkObsidian, fontWeight = FontWeight.Bold) }
+                                colors = ButtonDefaults.buttonColors(containerColor = LiquidBlue)
+                            ) { Text("Xác nhận", color = Color.White, fontWeight = FontWeight.Bold) }
                         }
                     }
                 }
@@ -545,7 +545,7 @@ fun SettingsScreen(
             LiquidGlassCard(
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
                 shape = RoundedCornerShape(20.dp),
-                backgroundColor = Color(0xFF0F172A).copy(alpha = 0.96f)
+                backgroundColor = GlassBaseCard
             ) {
                 Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("Sao lưu dữ liệu", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
@@ -557,8 +557,8 @@ fun SettingsScreen(
                             showBackupDialog = false
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = LiquidCyan)
-                    ) { Text("Sao chép bản sao lưu", color = DarkObsidian, fontWeight = FontWeight.Bold) }
+                        colors = ButtonDefaults.buttonColors(containerColor = LiquidBlue)
+                    ) { Text("Sao chép bản sao lưu", color = Color.White, fontWeight = FontWeight.Bold) }
                 }
             }
         }
@@ -572,7 +572,7 @@ fun SettingsScreen(
             LiquidGlassCard(
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
                 shape = RoundedCornerShape(20.dp),
-                backgroundColor = Color(0xFF0F172A).copy(alpha = 0.96f)
+                backgroundColor = GlassBaseCard
             ) {
                 Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("Khôi phục dữ liệu", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
@@ -594,8 +594,8 @@ fun SettingsScreen(
                                     importError = "Dữ liệu JSON không hợp lệ"
                                 }
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = LiquidEmerald)
-                        ) { Text("Khôi phục", color = DarkObsidian, fontWeight = FontWeight.Bold) }
+                            colors = ButtonDefaults.buttonColors(containerColor = LiquidBlue)
+                        ) { Text("Khôi phục", color = Color.White, fontWeight = FontWeight.Bold) }
                     }
                 }
             }
@@ -608,7 +608,7 @@ fun SettingsScreen(
             LiquidGlassCard(
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
                 shape = RoundedCornerShape(20.dp),
-                backgroundColor = Color(0xFF0F172A).copy(alpha = 0.96f)
+                backgroundColor = GlassBaseCard
             ) {
                 Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("Xóa sạch toàn bộ dữ liệu?", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = LiquidRose)
@@ -622,7 +622,7 @@ fun SettingsScreen(
                                 showResetDialog = false
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = LiquidRose)
-                        ) { Text("Xác nhận xóa hết", color = TextPrimary, fontWeight = FontWeight.Bold) }
+                        ) { Text("Xác nhận xóa hết", color = Color.White, fontWeight = FontWeight.Bold) }
                     }
                 }
             }
@@ -641,7 +641,7 @@ fun SettingsScreen(
                     .fillMaxWidth()
                     .padding(8.dp),
                 shape = RoundedCornerShape(20.dp),
-                backgroundColor = Color(0xFF0F172A).copy(alpha = 0.98f)
+                backgroundColor = GlassBaseCard
             ) {
                 Column(
                     modifier = Modifier.padding(18.dp),
@@ -746,7 +746,7 @@ fun SettingsScreen(
                         modifier = Modifier.fillMaxWidth().height(42.dp),
                         shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text("Xác nhận đăng nhập ngay", color = DarkObsidian, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        Text("Xác nhận đăng nhập ngay", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                     }
                 }
             }

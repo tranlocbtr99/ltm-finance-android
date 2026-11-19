@@ -60,9 +60,7 @@ class MainViewModel(
     }
 
     fun downloadAndInstallUpdate(url: String) {
-        viewModelScope.launch {
-            updateManager.downloadAndInstall(url)
-        }
+        updateManager.openDownloadInBrowser(url)
     }
 
     fun dismissUpdate() {

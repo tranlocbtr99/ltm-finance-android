@@ -53,7 +53,7 @@ fun AddTransactionDialog(
                 .fillMaxWidth()
                 .padding(vertical = 12.dp),
             shape = RoundedCornerShape(24.dp),
-            backgroundColor = Color(0xFF0F172A).copy(alpha = 0.96f)
+            backgroundColor = GlassBaseCard
         ) {
             Column(
                 modifier = Modifier
@@ -117,15 +117,15 @@ fun AddTransactionDialog(
                                 Box(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(12.dp))
-                                        .background(if (isSel) LiquidCyan.copy(alpha = 0.25f) else Color.White.copy(alpha = 0.05f))
-                                        .border(1.dp, if (isSel) LiquidCyan else GlassBorderStroke, RoundedCornerShape(12.dp))
+                                        .background(if (isSel) LiquidBlue.copy(alpha = 0.15f) else Color(0xFFF1F5F9))
+                                        .border(1.dp, if (isSel) LiquidBlue else GlassBorderStroke, RoundedCornerShape(12.dp))
                                         .clickable { selectedCategory = cat }
                                         .padding(horizontal = 10.dp, vertical = 6.dp)
                                 ) {
                                     Text(
                                         text = cat,
                                         fontSize = 12.sp,
-                                        color = if (isSel) LiquidCyan else TextSecondary,
+                                        color = if (isSel) LiquidBlue else TextSecondary,
                                         fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
                                         maxLines = 1
                                     )
@@ -151,8 +151,8 @@ fun AddTransactionDialog(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(if (isSel) LiquidCyan.copy(alpha = 0.25f) else Color.White.copy(alpha = 0.05f))
-                                    .border(1.dp, if (isSel) LiquidCyan else GlassBorderStroke, RoundedCornerShape(12.dp))
+                                    .background(if (isSel) LiquidBlue.copy(alpha = 0.15f) else Color(0xFFF1F5F9))
+                                    .border(1.dp, if (isSel) LiquidBlue else GlassBorderStroke, RoundedCornerShape(12.dp))
                                     .clickable {
                                         selectedAccountId = acc.id
                                         validationError = null
@@ -162,7 +162,7 @@ fun AddTransactionDialog(
                                 Text(
                                     text = acc.name,
                                     fontSize = 11.sp,
-                                    color = if (isSel) LiquidCyan else TextSecondary,
+                                    color = if (isSel) LiquidBlue else TextSecondary,
                                     maxLines = 1
                                 )
                             }
@@ -183,7 +183,7 @@ fun AddTransactionDialog(
                                 Box(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(12.dp))
-                                        .background(if (isSel) LiquidEmerald.copy(alpha = 0.25f) else Color.White.copy(alpha = 0.05f))
+                                        .background(if (isSel) LiquidEmerald.copy(alpha = 0.15f) else Color(0xFFF1F5F9))
                                         .border(1.dp, if (isSel) LiquidEmerald else GlassBorderStroke, RoundedCornerShape(12.dp))
                                         .clickable {
                                             selectedTargetAccountId = acc.id
@@ -261,10 +261,10 @@ fun AddTransactionDialog(
                             )
                             onDismiss()
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = LiquidCyan),
+                        colors = ButtonDefaults.buttonColors(containerColor = LiquidBlue),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("Lưu", color = DarkObsidian, fontWeight = FontWeight.Bold, fontSize = 13.sp, maxLines = 1)
+                        Text("Lưu", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp, maxLines = 1)
                     }
                 }
             }

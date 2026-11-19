@@ -40,11 +40,11 @@ fun SecurityLockScreen(
                 modifier = Modifier
                     .size(60.dp)
                     .clip(CircleShape)
-                    .background(LiquidCyan.copy(alpha = 0.2f))
-                    .border(1.dp, LiquidCyan.copy(alpha = 0.6f), CircleShape),
+                    .background(LiquidBlue.copy(alpha = 0.12f))
+                    .border(1.dp, LiquidBlue.copy(alpha = 0.4f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.Lock, contentDescription = null, tint = LiquidCyan, modifier = Modifier.size(28.dp))
+                Icon(Icons.Default.Lock, contentDescription = null, tint = LiquidBlue, modifier = Modifier.size(28.dp))
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -67,8 +67,8 @@ fun SecurityLockScreen(
                         modifier = Modifier
                             .size(16.dp)
                             .clip(CircleShape)
-                            .background(if (isFilled) LiquidCyan else GlassBaseLight)
-                            .border(1.dp, if (isFilled) LiquidCyan else GlassBorderStroke, CircleShape)
+                            .background(if (isFilled) LiquidBlue else GlassBaseLight)
+                            .border(1.dp, if (isFilled) LiquidBlue else GlassBorderStroke, CircleShape)
                     )
                 }
             }

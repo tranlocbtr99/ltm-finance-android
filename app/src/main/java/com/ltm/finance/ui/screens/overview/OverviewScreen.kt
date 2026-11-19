@@ -177,7 +177,7 @@ fun OverviewScreen(
             LiquidGlassCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
-                backgroundColor = Color(0xFF131D31).copy(alpha = 0.85f)
+                backgroundColor = GlassBaseCard
             ) {
                 Column(
                     modifier = Modifier
@@ -227,7 +227,7 @@ fun OverviewScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(16.dp))
-                            .background(Color.White.copy(alpha = 0.05f))
+                            .background(Color(0xFFF1F5F9).copy(alpha = 0.85f))
                             .border(1.dp, GlassBorderStroke, RoundedCornerShape(16.dp))
                             .padding(horizontal = 14.dp, vertical = 10.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -350,7 +350,7 @@ fun OverviewScreen(
                 LiquidGlassCard(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(20.dp),
-                    backgroundColor = Color(0xFF11733F).copy(alpha = 0.12f),
+                    backgroundColor = LiquidEmerald.copy(alpha = 0.08f),
                     borderColor = LiquidEmerald.copy(alpha = 0.35f)
                 ) {
                     Column(modifier = Modifier.padding(14.dp)) {
@@ -379,7 +379,7 @@ fun OverviewScreen(
                 LiquidGlassCard(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(20.dp),
-                    backgroundColor = Color(0xFFBA3151).copy(alpha = 0.12f),
+                    backgroundColor = LiquidRose.copy(alpha = 0.08f),
                     borderColor = LiquidRose.copy(alpha = 0.35f)
                 ) {
                     Column(modifier = Modifier.padding(14.dp)) {

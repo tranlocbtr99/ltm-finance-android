@@ -73,8 +73,8 @@ fun SplashScreen(
                         .background(
                             Brush.linearGradient(
                                 listOf(
-                                    Color(0xFF1E293B).copy(alpha = 0.85f),
-                                    Color(0xFF0F172A).copy(alpha = 0.95f)
+                                    Color.White,
+                                    Color(0xFFF1F5F9)
                                 )
                             )
                         )
@@ -82,8 +82,8 @@ fun SplashScreen(
                             1.5.dp,
                             Brush.verticalGradient(
                                 listOf(
-                                    LiquidCyan.copy(alpha = 0.8f),
-                                    LiquidIndigo.copy(alpha = 0.3f)
+                                    Color.White,
+                                    GlassBorderStroke
                                 )
                             ),
                             RoundedCornerShape(30.dp)
@@ -110,7 +110,7 @@ fun SplashScreen(
                         Icon(
                             imageVector = Icons.Default.AccountBalanceWallet,
                             contentDescription = null,
-                            tint = LiquidCyan,
+                            tint = LiquidBlue,
                             modifier = Modifier.size(36.dp)
                         )
                     }
@@ -155,7 +155,7 @@ fun SplashScreen(
                         .width(180.dp)
                         .height(4.dp)
                         .clip(RoundedCornerShape(2.dp))
-                        .background(Color.White.copy(alpha = 0.1f))
+                        .background(Color(0xFFE2E8F0))
                 ) {
                     Box(
                         modifier = Modifier
@@ -164,7 +164,7 @@ fun SplashScreen(
                             .clip(RoundedCornerShape(2.dp))
                             .background(
                                 Brush.horizontalGradient(
-                                    listOf(LiquidCyan, LiquidEmerald)
+                                    listOf(LiquidBlue, LiquidIndigo)
                                 )
                             )
                     )

@@ -311,10 +311,10 @@ fun ForecastSimulationScreen(
                                 viewModel.runPurchaseSimulation(itemName, price, installmentMonths)
                             },
                             modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(containerColor = LiquidCyan),
+                            colors = ButtonDefaults.buttonColors(containerColor = LiquidBlue),
                             shape = RoundedCornerShape(14.dp)
                         ) {
-                            Text("Chạy mô phỏng 4 phương án", color = DarkObsidian, fontWeight = FontWeight.Bold, maxLines = 1)
+                            Text("Chạy mô phỏng 4 phương án", color = Color.White, fontWeight = FontWeight.Bold, maxLines = 1)
                         }
                     }
                 }

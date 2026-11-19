@@ -3,16 +3,11 @@ package com.ltm.finance.data.update
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
-import androidx.core.content.FileProvider
-import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
-import java.io.File
-import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -30,8 +25,6 @@ sealed class UpdateStatus {
     object Checking : UpdateStatus()
     data class Available(val info: AppUpdateInfo) : UpdateStatus()
     object UpToDate : UpdateStatus()
-    data class Downloading(val progressPercent: Int) : UpdateStatus()
-    data class ReadyToInstall(val apkFile: File) : UpdateStatus()
     data class Error(val message: String) : UpdateStatus()
 }
 
@@ -70,7 +63,7 @@ class AppUpdateManager(private val context: Context) {
             val json = JsonParser.parseString(responseText).asJsonObject
 
             val tagName = json.get("tag_name")?.asString?.removePrefix("v") ?: "1.0.0"
-            val body = json.get("body")?.asString ?: "Cập nhật cải tiến giao diện và hiệu năng."
+            val body = json.get("body")?.asString ?: "Cập nhật cải tiến giao diện sáng iOS và tối ưu độ ổn định."
             val assets = json.getAsJsonArray("assets")
 
             var downloadUrl = ""
@@ -111,64 +104,15 @@ class AppUpdateManager(private val context: Context) {
         }
     }
 
-    suspend fun downloadAndInstall(downloadUrl: String) = withContext(Dispatchers.IO) {
+    fun openDownloadInBrowser(downloadUrl: String) {
         try {
-            _status.value = UpdateStatus.Downloading(0)
-            val url = URL(downloadUrl)
-            val conn = (url.openConnection() as HttpURLConnection).apply {
-                instanceFollowRedirects = true
-                connectTimeout = 15000
-                readTimeout = 30000
-            }
-
-            val fileLength = conn.contentLength
-            val apkFile = File(context.cacheDir, "ltm_update.apk")
-            if (apkFile.exists()) apkFile.delete()
-
-            conn.inputStream.use { input ->
-                FileOutputStream(apkFile).use { output ->
-                    val data = ByteArray(8192)
-                    var total: Long = 0
-                    var count: Int
-                    var lastPercent = 0
-
-                    while (input.read(data).also { count = it } != -1) {
-                        total += count
-                        output.write(data, 0, count)
-                        if (fileLength > 0) {
-                            val percent = ((total * 100) / fileLength).toInt()
-                            if (percent != lastPercent) {
-                                lastPercent = percent
-                                _status.value = UpdateStatus.Downloading(percent)
-                            }
-                        }
-                    }
-                }
-            }
-
-            _status.value = UpdateStatus.ReadyToInstall(apkFile)
-            installApk(apkFile)
-        } catch (e: Exception) {
-            _status.value = UpdateStatus.Error("Lỗi tải bản cập nhật: ${e.localizedMessage ?: "Đã ngắt kết nối"}")
-        }
-    }
-
-    fun installApk(apkFile: File) {
-        try {
-            val uri: Uri = FileProvider.getUriForFile(
-                context,
-                "${context.packageName}.provider",
-                apkFile
-            )
-
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(uri, "application/vnd.android.package-archive")
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl)).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             context.startActivity(intent)
+            _status.value = UpdateStatus.Idle
         } catch (e: Exception) {
-            _status.value = UpdateStatus.Error("Không thể mở trình cài đặt: ${e.localizedMessage}")
+            _status.value = UpdateStatus.Error("Không thể mở trình tải: ${e.localizedMessage}")
         }
     }
 

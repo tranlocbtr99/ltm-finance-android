@@ -104,7 +104,7 @@ fun TransactionsScreen(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(18.dp))
-                        .background(LiquidCyan)
+                        .background(LiquidBlue)
                         .clickable { onOpenAddTransaction() }
                         .padding(horizontal = 12.dp, vertical = 7.dp)
                 ) {
@@ -112,13 +112,13 @@ fun TransactionsScreen(
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = null,
-                            tint = DarkObsidian,
+                            tint = Color.White,
                             modifier = Modifier.size(15.dp)
                         )
                         Spacer(modifier = Modifier.width(3.dp))
                         Text(
                             text = "Ghi chép",
-                            color = DarkObsidian,
+                            color = Color.White,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             maxLines = 1

@@ -220,11 +220,11 @@ fun AdminDashboardScreen(
                                     clipboard.setPrimaryClip(ClipData.newPlainText("Research Events CSV", csv))
                                     Toast.makeText(context, "Đã chép CSV Sự kiện (${events.size} dòng) vào bộ nhớ tạm", Toast.LENGTH_SHORT).show()
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = LiquidCyan),
+                                colors = ButtonDefaults.buttonColors(containerColor = LiquidBlue),
                                 shape = RoundedCornerShape(10.dp),
                                 modifier = Modifier.weight(1f).height(42.dp)
                             ) {
-                                Text("Chép CSV Sự kiện", color = DarkObsidian, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                Text("Chép CSV Sự kiện", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                             }
 
                             Button(
@@ -239,7 +239,7 @@ fun AdminDashboardScreen(
                                 shape = RoundedCornerShape(10.dp),
                                 modifier = Modifier.weight(1f).height(42.dp)
                             ) {
-                                Text("Chép CSV Chỉ số", color = DarkObsidian, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                Text("Chép CSV Chỉ số", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                             }
                         }
                     }

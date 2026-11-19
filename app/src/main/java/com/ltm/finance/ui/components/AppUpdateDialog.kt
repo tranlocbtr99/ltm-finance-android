@@ -9,7 +9,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudDownload
-import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -41,12 +40,6 @@ fun AppUpdateDialog(
                 onDismiss = onDismiss
             )
         }
-        is UpdateStatus.Downloading -> {
-            DownloadingContent(
-                progressPercent = status.progressPercent,
-                onDismiss = onDismiss
-            )
-        }
         is UpdateStatus.Error -> {
             ErrorContent(
                 message = status.message,
@@ -69,7 +62,7 @@ private fun UpdateAvailableContent(
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp),
             shape = RoundedCornerShape(28.dp),
-            backgroundColor = Color(0xFF131D31)
+            backgroundColor = GlassBase
         ) {
             Column(
                 modifier = Modifier
@@ -85,18 +78,18 @@ private fun UpdateAvailableContent(
                         .background(
                             Brush.linearGradient(
                                 listOf(
-                                    LiquidCyan.copy(alpha = 0.25f),
-                                    LiquidIndigo.copy(alpha = 0.15f)
+                                    LiquidBlue.copy(alpha = 0.25f),
+                                    LiquidCyan.copy(alpha = 0.15f)
                                 )
                             )
                         )
-                        .border(1.5.dp, LiquidCyan.copy(alpha = 0.5f), CircleShape),
+                        .border(1.5.dp, LiquidBlue.copy(alpha = 0.5f), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.CloudDownload,
                         contentDescription = null,
-                        tint = LiquidCyan,
+                        tint = LiquidBlue,
                         modifier = Modifier.size(28.dp)
                     )
                 }
@@ -108,7 +101,7 @@ private fun UpdateAvailableContent(
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.2.sp,
-                    color = LiquidCyan
+                    color = LiquidBlue
                 )
 
                 Text(
@@ -132,13 +125,13 @@ private fun UpdateAvailableContent(
                         .fillMaxWidth()
                         .heightIn(max = 160.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Color.White.copy(alpha = 0.05f))
+                        .background(Color.Black.copy(alpha = 0.04f))
                         .border(1.dp, GlassBorderStroke, RoundedCornerShape(16.dp))
                         .padding(14.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
                     Text(
-                        text = info.releaseNotes.ifBlank { "• Nâng cấp giao diện iOS Liquid Glass\n• Cải tiến hiệu năng và độ ổn định\n• Cập nhật tự động trực tuyến" },
+                        text = info.releaseNotes.ifBlank { "• Nâng cấp giao diện iOS Liquid Glass sáng\n• Khắc phục quyền trợ năng và tối ưu bảo mật\n• Cải tiến hiệu năng" },
                         fontSize = 12.sp,
                         color = TextSecondary,
                         lineHeight = 18.sp
@@ -169,93 +162,13 @@ private fun UpdateAvailableContent(
                             .weight(1f)
                             .height(46.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = LiquidCyan
+                            containerColor = LiquidBlue
                         ),
                         shape = RoundedCornerShape(999.dp)
                     ) {
-                        Text("Cập nhật ngay", color = DarkObsidian, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        Text("Cập nhật ngay", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                     }
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun DownloadingContent(
-    progressPercent: Int,
-    onDismiss: () -> Unit
-) {
-    Dialog(onDismissRequest = {}) {
-        LiquidGlassCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp),
-            shape = RoundedCornerShape(28.dp),
-            backgroundColor = Color(0xFF131D31)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .clip(CircleShape)
-                        .background(LiquidCyan.copy(alpha = 0.2f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.SystemUpdate,
-                        contentDescription = null,
-                        tint = LiquidCyan,
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "Đang tải bản cập nhật...",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextPrimary
-                )
-
-                Text(
-                    text = "Gói cài đặt đang được tải về từ GitHub Releases",
-                    fontSize = 12.sp,
-                    color = TextSecondary,
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(18.dp))
-
-                LiquidProgressBar(
-                    progressPercent = progressPercent,
-                    modifier = Modifier.fillMaxWidth(),
-                    height = 10.dp,
-                    barColor = LiquidCyan
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Text(
-                    text = "$progressPercent%",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = LiquidCyan
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Sau khi tải xong, hệ thống sẽ tự động mở bảng cài đặt cập nhật.",
-                    fontSize = 11.sp,
-                    color = TextTertiary,
-                    textAlign = TextAlign.Center
-                )
             }
         }
     }
@@ -272,7 +185,7 @@ private fun ErrorContent(
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp),
             shape = RoundedCornerShape(28.dp),
-            backgroundColor = Color(0xFF131D31)
+            backgroundColor = GlassBase
         ) {
             Column(
                 modifier = Modifier
@@ -281,7 +194,7 @@ private fun ErrorContent(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Thông báo cập nhật",
+                    text = "Thông báo",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary

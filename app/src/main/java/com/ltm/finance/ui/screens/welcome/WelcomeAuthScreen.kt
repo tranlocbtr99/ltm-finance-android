@@ -100,13 +100,13 @@ fun WelcomeAuthScreen(
                         .clip(RoundedCornerShape(22.dp))
                         .background(
                             Brush.linearGradient(
-                                listOf(Color(0xFF1E293B), Color(0xFF0F172A))
+                                listOf(Color.White, Color(0xFFF1F5F9))
                             )
                         )
                         .border(
                             1.dp,
                             Brush.verticalGradient(
-                                listOf(LiquidCyan.copy(alpha = 0.8f), LiquidIndigo.copy(alpha = 0.3f))
+                                listOf(Color.White, GlassBorderStroke)
                             ),
                             RoundedCornerShape(22.dp)
                         ),
@@ -115,7 +115,7 @@ fun WelcomeAuthScreen(
                     Icon(
                         imageVector = Icons.Default.AccountBalanceWallet,
                         contentDescription = null,
-                        tint = LiquidCyan,
+                        tint = LiquidBlue,
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -178,7 +178,7 @@ fun WelcomeAuthScreen(
                 LiquidGlassCard(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(18.dp),
-                    backgroundColor = Color(0xFF0F172A).copy(alpha = 0.75f)
+                    backgroundColor = GlassBaseCard
                 ) {
                     Column(modifier = Modifier.padding(14.dp)) {
                         Row(
@@ -193,7 +193,7 @@ fun WelcomeAuthScreen(
                                 colors = CheckboxDefaults.colors(
                                     checkedColor = LiquidEmerald,
                                     uncheckedColor = TextSecondary,
-                                    checkmarkColor = DarkObsidian
+                                    checkmarkColor = Color.White
                                 )
                             )
                             Spacer(modifier = Modifier.width(6.dp))
@@ -330,7 +330,7 @@ fun WelcomeAuthScreen(
                     .fillMaxWidth()
                     .padding(8.dp),
                 shape = RoundedCornerShape(22.dp),
-                backgroundColor = Color(0xFF0F172A).copy(alpha = 0.98f)
+                backgroundColor = GlassBaseCard
             ) {
                 Column(
                     modifier = Modifier
@@ -394,10 +394,10 @@ fun WelcomeAuthScreen(
                             showPrivacyDialog = false
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = LiquidCyan),
+                        colors = ButtonDefaults.buttonColors(containerColor = LiquidBlue),
                         shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text("Đồng ý & Đóng", color = DarkObsidian, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("Đồng ý & Đóng", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                 }
             }
@@ -412,7 +412,7 @@ fun WelcomeAuthScreen(
                     .fillMaxWidth()
                     .padding(8.dp),
                 shape = RoundedCornerShape(22.dp),
-                backgroundColor = Color(0xFF0F172A).copy(alpha = 0.98f)
+                backgroundColor = GlassBaseCard
             ) {
                 Column(
                     modifier = Modifier.padding(18.dp),
@@ -464,7 +464,7 @@ fun WelcomeAuthScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = LiquidRose),
                         shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text("Đăng nhập Quản trị", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        Text("Đăng nhập Quản trị", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                     }
                 }
             }
@@ -479,7 +479,7 @@ fun WelcomeAuthScreen(
                     .fillMaxWidth()
                     .padding(8.dp),
                 shape = RoundedCornerShape(22.dp),
-                backgroundColor = Color(0xFF0F172A).copy(alpha = 0.98f)
+                backgroundColor = GlassBaseCard
             ) {
                 Column(
                     modifier = Modifier.padding(18.dp),
@@ -504,10 +504,10 @@ fun WelcomeAuthScreen(
                             onLoginSuccess()
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = LiquidEmerald),
+                        colors = ButtonDefaults.buttonColors(containerColor = LiquidBlue),
                         shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text("Xác nhận đăng nhập", color = DarkObsidian, fontWeight = FontWeight.Bold)
+                        Text("Xác nhận đăng nhập", color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 }
             }

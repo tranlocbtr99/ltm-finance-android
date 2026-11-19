@@ -92,13 +92,13 @@ fun AccountsDebtsScreen(
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = null,
-                            tint = DarkObsidian,
+                            tint = Color.White,
                             modifier = Modifier.size(15.dp)
                         )
                         Spacer(modifier = Modifier.width(3.dp))
                         Text(
                             text = if (selectedTab == 0) "Thêm ví" else "Thêm nợ",
-                            color = DarkObsidian,
+                            color = Color.White,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             maxLines = 1
@@ -203,7 +203,7 @@ fun AccountsDebtsScreen(
                                 colors = ButtonDefaults.buttonColors(containerColor = LiquidEmerald),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
-                                Text("Tạo tài khoản đầu tiên", color = DarkObsidian, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                Text("Tạo tài khoản đầu tiên", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                             }
                         }
                     }
@@ -477,7 +477,7 @@ fun AccountsDebtsScreen(
                     .fillMaxWidth()
                     .padding(vertical = 12.dp),
                 shape = RoundedCornerShape(22.dp),
-                backgroundColor = Color(0xFF0F172A).copy(alpha = 0.96f)
+                backgroundColor = GlassBaseCard
             ) {
                 Column(
                     modifier = Modifier
@@ -514,15 +514,15 @@ fun AccountsDebtsScreen(
                                 Box(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(10.dp))
-                                        .background(if (isSel) LiquidCyan.copy(alpha = 0.25f) else Color.White.copy(alpha = 0.05f))
-                                        .border(1.dp, if (isSel) LiquidCyan else GlassBorderStroke, RoundedCornerShape(10.dp))
+                                        .background(if (isSel) LiquidBlue.copy(alpha = 0.15f) else Color(0xFFF1F5F9))
+                                        .border(1.dp, if (isSel) LiquidBlue else GlassBorderStroke, RoundedCornerShape(10.dp))
                                         .clickable {
                                             selectedAccType = type
                                             isLiquid = type != AccountType.SAVINGS
                                         }
                                         .padding(horizontal = 9.dp, vertical = 6.dp)
                                 ) {
-                                    Text(type.displayName, fontSize = 11.sp, color = if (isSel) LiquidCyan else TextSecondary)
+                                    Text(type.displayName, fontSize = 11.sp, color = if (isSel) LiquidBlue else TextSecondary)
                                 }
                             }
                         }
@@ -570,10 +570,10 @@ fun AccountsDebtsScreen(
                                     showAddAccountDialog = false
                                 }
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = LiquidEmerald),
+                            colors = ButtonDefaults.buttonColors(containerColor = LiquidBlue),
                             shape = RoundedCornerShape(10.dp)
                         ) {
-                            Text("Lưu tài khoản", color = DarkObsidian, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            Text("Lưu tài khoản", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         }
                     }
                 }
@@ -594,7 +594,7 @@ fun AccountsDebtsScreen(
                     .fillMaxWidth()
                     .padding(vertical = 12.dp),
                 shape = RoundedCornerShape(22.dp),
-                backgroundColor = Color(0xFF0F172A).copy(alpha = 0.96f)
+                backgroundColor = GlassBaseCard
             ) {
                 Column(
                     modifier = Modifier
@@ -656,7 +656,7 @@ fun AccountsDebtsScreen(
                             colors = ButtonDefaults.buttonColors(containerColor = LiquidRose),
                             shape = RoundedCornerShape(10.dp)
                         ) {
-                            Text("Lưu khoản nợ", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            Text("Lưu khoản nợ", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         }
                     }
                 }
@@ -672,7 +672,7 @@ fun AccountsDebtsScreen(
                     .fillMaxWidth()
                     .padding(20.dp),
                 shape = RoundedCornerShape(20.dp),
-                backgroundColor = Color(0xFF0F172A).copy(alpha = 0.96f)
+                backgroundColor = GlassBaseCard
             ) {
                 Column(
                     modifier = Modifier.padding(18.dp),
@@ -701,7 +701,7 @@ fun AccountsDebtsScreen(
                             colors = ButtonDefaults.buttonColors(containerColor = LiquidRose),
                             shape = RoundedCornerShape(10.dp)
                         ) {
-                            Text("Xác nhận xóa", color = TextPrimary, fontWeight = FontWeight.Bold)
+                            Text("Xác nhận xóa", color = Color.White, fontWeight = FontWeight.Bold)
                         }
                     }
                 }

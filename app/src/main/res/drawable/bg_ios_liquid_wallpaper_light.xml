@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="1080dp"
+    android:height="2400dp"
+    android:viewportWidth="1080"
+    android:viewportHeight="2400">
+
+    <!-- Base Pearly Apple Canvas Surface -->
+    <path
+        android:pathData="M0,0 L1080,0 L1080,2400 L0,2400 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="0"
+                android:startY="0"
+                android:endX="1080"
+                android:endY="2400"
+                android:startColor="#F8FAFC"
+                android:centerColor="#F1F5F9"
+                android:endColor="#E2E8F0" />
+        </aapt:attr>
+    </path>
+
+    <!-- Top Left Radiant Soft Sky Blue Aurora -->
+    <path
+        android:pathData="M-150,-100 Q400,300 850,-80 Q1100,500 550,750 Q100,950 -180,450 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="350"
+                android:centerY="250"
+                android:gradientRadius="800"
+                android:startColor="#66BAE6FD"
+                android:centerColor="#337DD3FC"
+                android:endColor="#00000000" />
+        </aapt:attr>
+    </path>
+
+    <!-- Upper Right Soft Lavender & Royal Violet Ambient Glow -->
+    <path
+        android:pathData="M350,-50 C750,80 1150,220 1150,750 C1150,1150 720,1000 480,800 C220,600 180,280 350,-50 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="850"
+                android:centerY="450"
+                android:gradientRadius="750"
+                android:startColor="#66DDD6FE"
+                android:centerColor="#33C4B5FD"
+                android:endColor="#00000000" />
+        </aapt:attr>
+    </path>
+
+    <!-- Mid-screen Soft Aqua & Mint Flow Curve -->
+    <path
+        android:pathData="M-100,900 Q450,750 820,1200 Q1150,1650 620,1800 Q180,1900 -100,1500 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="320"
+                android:centerY="1350"
+                android:gradientRadius="850"
+                android:startColor="#4DA7F3D0"
+                android:centerColor="#266EE7B7"
+                android:endColor="#00000000" />
+        </aapt:attr>
+    </path>
+
+    <!-- Bottom Soft Coral Rose Nebula Bloom -->
+    <path
+        android:pathData="M150,1600 Q850,1500 1180,1900 Q1150,2450 580,2420 Q-100,2450 50,1900 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="750"
+                android:centerY="2050"
+                android:gradientRadius="850"
+                android:startColor="#59FECDD3"
+                android:centerColor="#26FDA4AF"
+                android:endColor="#00000000" />
+        </aapt:attr>
+    </path>
+
+    <!-- Ambient Floating Glass Rings (VisionOS Specular Refraction in Light Mode) -->
+    <path
+        android:strokeWidth="1.5"
+        android:pathData="M250,350 A300,300 0 1,0 850,350 A300,300 0 1,0 250,350">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:type="linear"
+                android:startX="250"
+                android:startY="50"
+                android:endX="850"
+                android:endY="650"
+                android:startColor="#4D0284C7"
+                android:centerColor="#26FFFFFF"
+                android:endColor="#00000000" />
+        </aapt:attr>
+    </path>
+
+    <path
+        android:strokeWidth="1.5"
+        android:pathData="M-50,1300 A420,420 0 1,0 790,1300 A420,420 0 1,0 -50,1300">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:type="linear"
+                android:startX="-50"
+                android:startY="880"
+                android:endX="790"
+                android:endY="1720"
+                android:startColor="#33818CF8"
+                android:centerColor="#26FFFFFF"
+                android:endColor="#00000000" />
+        </aapt:attr>
+    </path>
+</vector>

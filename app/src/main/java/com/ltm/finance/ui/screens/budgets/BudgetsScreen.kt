@@ -77,14 +77,14 @@ fun BudgetsScreen(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(18.dp))
-                        .background(LiquidCyan)
+                        .background(LiquidBlue)
                         .clickable { showAddBudgetDialog = true }
                         .padding(horizontal = 12.dp, vertical = 7.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Add, contentDescription = null, tint = DarkObsidian, modifier = Modifier.size(15.dp))
+                        Icon(Icons.Default.Add, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
                         Spacer(modifier = Modifier.width(3.dp))
-                        Text("Thêm", color = DarkObsidian, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text("Thêm", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -127,10 +127,10 @@ fun BudgetsScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
                             onClick = { showAddBudgetDialog = true },
-                            colors = ButtonDefaults.buttonColors(containerColor = LiquidCyan),
+                            colors = ButtonDefaults.buttonColors(containerColor = LiquidBlue),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("Tạo ngân sách đầu tiên", color = DarkObsidian, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            Text("Tạo ngân sách đầu tiên", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                         }
                     }
                 }
@@ -285,7 +285,7 @@ fun BudgetsScreen(
                     .fillMaxWidth()
                     .padding(vertical = 12.dp),
                 shape = RoundedCornerShape(22.dp),
-                backgroundColor = Color(0xFF0F172A).copy(alpha = 0.96f)
+                backgroundColor = GlassBaseCard
             ) {
                 Column(
                     modifier = Modifier
@@ -304,12 +304,12 @@ fun BudgetsScreen(
                                 Box(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(10.dp))
-                                        .background(if (isSel) LiquidCyan.copy(alpha = 0.25f) else Color.White.copy(alpha = 0.05f))
-                                        .border(1.dp, if (isSel) LiquidCyan else GlassBorderStroke, RoundedCornerShape(10.dp))
+                                        .background(if (isSel) LiquidBlue.copy(alpha = 0.15f) else Color(0xFFF1F5F9))
+                                        .border(1.dp, if (isSel) LiquidBlue else GlassBorderStroke, RoundedCornerShape(10.dp))
                                         .clickable { selectedCat = cat }
                                         .padding(horizontal = 9.dp, vertical = 6.dp)
                                 ) {
-                                    Text(cat, fontSize = 11.sp, color = if (isSel) LiquidCyan else TextSecondary)
+                                    Text(cat, fontSize = 11.sp, color = if (isSel) LiquidBlue else TextSecondary)
                                 }
                             }
                         }
@@ -353,10 +353,10 @@ fun BudgetsScreen(
                                     showAddBudgetDialog = false
                                 }
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = LiquidCyan),
+                            colors = ButtonDefaults.buttonColors(containerColor = LiquidBlue),
                             shape = RoundedCornerShape(10.dp)
                         ) {
-                            Text("Lưu ngân sách", color = DarkObsidian, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            Text("Lưu ngân sách", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         }
                     }
                 }
@@ -375,7 +375,7 @@ fun BudgetsScreen(
                     .fillMaxWidth()
                     .padding(vertical = 14.dp),
                 shape = RoundedCornerShape(22.dp),
-                backgroundColor = Color(0xFF0F172A).copy(alpha = 0.96f)
+                backgroundColor = GlassBaseCard
             ) {
                 Column(
                     modifier = Modifier
@@ -418,10 +418,10 @@ fun BudgetsScreen(
                                 viewModel.adjustBudget(b.id, amt, reasonText.ifBlank { "Người dùng cập nhật" })
                                 editingBudget = null
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = LiquidCyan),
+                            colors = ButtonDefaults.buttonColors(containerColor = LiquidBlue),
                             shape = RoundedCornerShape(10.dp)
                         ) {
-                            Text("Xác nhận", color = DarkObsidian, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            Text("Xác nhận", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                         }
                     }
                 }
@@ -438,7 +438,7 @@ fun BudgetsScreen(
                     .heightIn(max = 480.dp)
                     .padding(vertical = 14.dp),
                 shape = RoundedCornerShape(22.dp),
-                backgroundColor = Color(0xFF0F172A).copy(alpha = 0.96f)
+                backgroundColor = GlassBaseCard
             ) {
                 Column(
                     modifier = Modifier
@@ -455,7 +455,7 @@ fun BudgetsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color.White.copy(alpha = 0.05f))
+                                .background(Color(0xFFF1F5F9))
                                 .padding(10.dp)
                         ) {
                             Column {
@@ -467,7 +467,7 @@ fun BudgetsScreen(
                                         text = "${FinanceEngine.formatVnd(adj.previousAmount)} ➔ ${FinanceEngine.formatVnd(adj.newAmount)}",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 12.sp,
-                                        color = LiquidCyan,
+                                        color = LiquidBlue,
                                         maxLines = 1
                                     )
                                     Text(adj.modifiedBy, fontSize = 10.sp, color = TextTertiary, maxLines = 1)
@@ -500,7 +500,7 @@ fun BudgetsScreen(
                     .fillMaxWidth()
                     .padding(20.dp),
                 shape = RoundedCornerShape(20.dp),
-                backgroundColor = Color(0xFF0F172A).copy(alpha = 0.96f)
+                backgroundColor = GlassBaseCard
             ) {
                 Column(
                     modifier = Modifier.padding(18.dp),
@@ -524,7 +524,7 @@ fun BudgetsScreen(
                             colors = ButtonDefaults.buttonColors(containerColor = LiquidRose),
                             shape = RoundedCornerShape(10.dp)
                         ) {
-                            Text("Xóa", color = TextPrimary, fontWeight = FontWeight.Bold)
+                            Text("Xóa", color = Color.White, fontWeight = FontWeight.Bold)
                         }
                     }
                 }

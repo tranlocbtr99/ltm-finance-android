@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -263,19 +264,25 @@ fun LiquidGlassBottomBar(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .shadow(
+                    elevation = 12.dp,
+                    shape = RoundedCornerShape(32.dp),
+                    spotColor = Color(0x220F172A),
+                    ambientColor = Color(0x100F172A)
+                )
                 .clip(RoundedCornerShape(32.dp))
-                .background(Color(0xFF0F172A).copy(alpha = 0.88f))
+                .background(Color.White.copy(alpha = 0.94f))
                 .border(
                     width = 1.dp,
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            GlassBorderTopHighlight,
-                            GlassBorderStroke.copy(alpha = 0.2f)
+                            Color.White,
+                            GlassBorderStroke
                         )
                     ),
                     shape = RoundedCornerShape(32.dp)
                 )
-                .padding(horizontal = 6.dp, vertical = 6.dp)
+                .padding(horizontal = 6.dp, vertical = 8.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),

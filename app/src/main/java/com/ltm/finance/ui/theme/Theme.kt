@@ -5,19 +5,20 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val DarkColorScheme = darkColorScheme(
-    primary = LiquidCyan,
+private val LightColorScheme = lightColorScheme(
+    primary = LiquidBlue,
     secondary = LiquidIndigo,
     tertiary = LiquidEmerald,
-    background = DarkObsidian,
-    surface = MidnightNavy,
-    onPrimary = TextPrimary,
-    onSecondary = TextPrimary,
-    onTertiary = TextPrimary,
+    background = LightCanvasBase,
+    surface = SurfaceLight,
+    onPrimary = Color.White,
+    onSecondary = Color.White,
+    onTertiary = Color.White,
     onBackground = TextPrimary,
     onSurface = TextPrimary
 )
@@ -27,16 +28,16 @@ fun LTMFinanceTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme = DarkColorScheme
+    val colorScheme = LightColorScheme
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as? Activity)?.window
             window?.let {
-                it.statusBarColor = DarkObsidian.toArgb()
-                it.navigationBarColor = DarkObsidian.toArgb()
-                WindowCompat.getInsetsController(it, view).isAppearanceLightStatusBars = false
-                WindowCompat.getInsetsController(it, view).isAppearanceLightNavigationBars = false
+                it.statusBarColor = Color.Transparent.toArgb()
+                it.navigationBarColor = Color.Transparent.toArgb()
+                WindowCompat.getInsetsController(it, view).isAppearanceLightStatusBars = true
+                WindowCompat.getInsetsController(it, view).isAppearanceLightNavigationBars = true
             }
         }
     }
@@ -46,4 +47,3 @@ fun LTMFinanceTheme(
         content = content
     )
 }
-

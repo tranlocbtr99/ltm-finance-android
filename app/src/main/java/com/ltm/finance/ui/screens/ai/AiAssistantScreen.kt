@@ -156,13 +156,13 @@ fun AiAssistantScreen(
                                 modifier = Modifier
                                     .widthIn(max = 280.dp)
                                     .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 4.dp, bottomStart = 16.dp, bottomEnd = 16.dp))
-                                    .background(LiquidCyan)
+                                    .background(LiquidBlue)
                                     .padding(12.dp)
                             ) {
                                 Text(
                                     text = msg.text,
                                     fontSize = 13.sp,
-                                    color = DarkObsidian,
+                                    color = Color.White,
                                     fontWeight = FontWeight.Medium
                                 )
                             }
@@ -229,7 +229,7 @@ fun AiAssistantScreen(
                                     ) {
                                         Text(
                                             text = if (isConfirmed) "✅ Đã ghi vào sổ giao dịch" else "⚡ Xác nhận ghi vào sổ ngay",
-                                            color = if (isConfirmed) LiquidEmerald else DarkObsidian,
+                                            color = if (isConfirmed) LiquidEmerald else Color.White,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 12.sp,
                                             maxLines = 1
@@ -241,10 +241,10 @@ fun AiAssistantScreen(
                                     Spacer(modifier = Modifier.height(10.dp))
                                     Button(
                                         onClick = onNavigateToSimulation,
-                                        colors = ButtonDefaults.buttonColors(containerColor = LiquidCyan),
+                                        colors = ButtonDefaults.buttonColors(containerColor = LiquidBlue),
                                         shape = RoundedCornerShape(10.dp)
                                     ) {
-                                        Text(msg.actionSuggestion, color = DarkObsidian, fontWeight = FontWeight.Bold, fontSize = 12.sp, maxLines = 1)
+                                        Text(msg.actionSuggestion, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp, maxLines = 1)
                                     }
                                 }
                             }
@@ -297,13 +297,13 @@ fun AiAssistantScreen(
                             modifier = Modifier
                                 .size(34.dp)
                                 .clip(CircleShape)
-                                .background(LiquidCyan),
+                                .background(LiquidBlue),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.Send,
                                 contentDescription = "Gửi",
-                                tint = DarkObsidian,
+                                tint = Color.White,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -431,10 +431,10 @@ fun AiAssistantScreen(
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Button(
                                         onClick = { viewModel.applyAiBudgetRecommendation(rec) },
-                                        colors = ButtonDefaults.buttonColors(containerColor = LiquidCyan),
+                                        colors = ButtonDefaults.buttonColors(containerColor = LiquidBlue),
                                         shape = RoundedCornerShape(8.dp)
                                     ) {
-                                        Text("Chấp nhận", color = DarkObsidian, fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                                        Text("Chấp nhận", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1)
                                     }
                                 } else if (rec.status == RecommendationStatus.ACCEPTED || rec.status == RecommendationStatus.MONITORING) {
                                     TextButton(onClick = { viewModel.markRecommendationImplemented(rec.id, isPartial = true) }) {
@@ -446,7 +446,7 @@ fun AiAssistantScreen(
                                         colors = ButtonDefaults.buttonColors(containerColor = LiquidEmerald),
                                         shape = RoundedCornerShape(8.dp)
                                     ) {
-                                        Text("Hoàn thành", color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                                        Text("Hoàn thành", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1)
                                     }
                                 } else {
                                     Text(
